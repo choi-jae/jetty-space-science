@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#f2fbff" />
+  <title>JETTY SPACE — 인터랙티브 과학 전시관</title>
+  <link rel="stylesheet" href="/style.css" />
+  <script type="importmap">
+  { "imports": { "three": "/vendor/three.module.js", "three/addons/": "/vendor/jsm/" } }
+  </script>
+</head>
+<body>
+  <div id="viewport"></div>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="JETTY SPACE 홈"><span class="brand-icon">✳</span><span>JETTY<span class="brand-soft">SPACE</span></span><span class="brand-tag">v0.7 GLB TEST</span></a>
+    <div class="header-actions"><span class="connection" id="connection"><span class="signal"></span>연결 중</span><span class="visitor-count"><span>●</span> <strong id="online">1</strong><span> / 30명 접속</span></span><button class="help-button" id="helpBtn">? 조작 안내</button></div>
+  </header>
+  <aside class="left-panel">
+    <div class="eyebrow">VIRTUAL SCIENCE MUSEUM</div>
+    <h1>과학을<br/><em>탐험하다.</em></h1>
+    <p class="intro">직접 움직이고, 발견하고, 함께 배우는<br/>우리만의 3D 과학 전시관</p>
+    <div class="panel-divider"></div>
+    <div class="section-label">EXHIBITION MAP <small>03 GALLERIES</small></div>
+    <button class="exhibit-link" data-exhibit="mechanics"><span class="exhibit-number">01</span><span><strong>역학관</strong><small>운동 · 힘 · 에너지</small></span><span class="arrow">↗</span></button>
+    <button class="exhibit-link" data-exhibit="electromagnetism"><span class="exhibit-number">02</span><span><strong>전자기관</strong><small>전기장 · 자기장 · 유도</small></span><span class="arrow">↗</span></button>
+    <button class="exhibit-link" data-exhibit="waves"><span class="exhibit-number">03</span><span><strong>파동관</strong><small>진동 · 간섭 · 정상파</small></span><span class="arrow">↗</span></button>
+    <div class="panel-divider"></div>
+    <div class="exploration-status"><div><span class="tiny-dot"></span> 탐험 진행률</div><strong id="progressLabel">0 / 3</strong></div>
+    <div class="progress"><span id="progressBar"></span></div>
+  </aside>
+  <div id="reticle" aria-hidden="true">+</div>
+  <div class="toast" id="toast" role="status"></div>
+  <div class="interact" id="interact"><span class="key">E</span><span id="interactText">실험관 살펴보기</span></div>
+  <div class="controls"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 이동</span><span><kbd>마우스 드래그</kbd> 시점</span><span><kbd>E</kbd> 관람</span><span><kbd>Shift</kbd> 달리기</span><span><kbd>F</kbd> 인사하기</span></div>
+  <section class="chat-panel" id="chatPanel">
+    <div class="chat-header"><span><span class="chat-dot"></span> LIVE EXPLORERS</span><button id="chatToggle" aria-label="채팅 접기">−</button></div>
+    <div id="chatMessages" class="messages" aria-live="polite"><div class="system-message">다른 탐험가들과 이야기를 나눠보세요.</div></div>
+    <form id="chatForm" class="chat-input"><input id="chatInput" maxlength="120" autocomplete="off" placeholder="메시지 입력 후 Enter" aria-label="채팅 메시지"/><button type="submit" aria-label="전송">➤</button></form>
+  </section>
+  <div class="overlay" id="welcomeOverlay">
+    <div class="welcome-card"><div class="welcome-mark">✳</div><div class="eyebrow">WELCOME TO JETTY SPACE</div><h2>호기심이 시작되는 공간</h2><p>3개의 과학 실험관을 탐험하고, 친구들과 함께<br/>과학의 원리를 발견해 보세요.</p><label for="nickname">탐험가 이름</label><input id="nickname" maxlength="14" placeholder="예: 물리탐험가" value="과학탐험가"/><div class="avatar-status" id="avatarStatus" role="status" aria-live="polite">고품질 GLB 캐릭터를 불러오는 중…</div><button class="primary" id="enterBtn" disabled>전시관 입장하기 <span>→</span></button><small>※ 같은 서버 주소에 접속하면 다른 사람들과 함께 관람할 수 있습니다.</small></div>
+  </div>
+  <div class="overlay hidden" id="exhibitOverlay"><div class="info-card"><button class="close" id="closeExhibit" aria-label="닫기">✕</button><div class="eyebrow" id="infoCategory">EXHIBIT 01 / PHYSICS</div><h2 id="infoTitle"></h2><p class="info-description" id="infoDescription"></p><div class="formula" id="infoFormula"></div><div class="fact" id="infoFact"></div><button class="primary" id="finishExhibit">관 탐험 완료 <span>✓</span></button></div></div>
+  <div class="overlay hidden" id="helpOverlay"><div class="info-card help-card"><button class="close" id="closeHelp" aria-label="닫기">✕</button><div class="eyebrow">HOW TO EXPLORE</div><h2>전시관 조작 안내</h2><p>F — 손 흔들기(다른 접속자에게도 표시)<br/>W A S D — 아바타 이동<br/>Shift — 빠르게 이동<br/>마우스 드래그 — 카메라 회전<br/>E — 가까운 전시 관람<br/>우측 아래 채팅창 — 실시간 대화<br/>왼쪽 전시 목록 — 해당 전시 위치로 이동</p><div class="fact">스마트폰에서는 화면을 드래그하여 시점을 돌리고, 왼쪽 아래 가상 스틱으로 이동할 수 있습니다.</div></div></div>
+  <div id="touchControls"><div id="joystick" aria-label="이동 스틱"><div id="stick"></div></div><button id="touchWave" aria-label="손 흔들기">👋 인사</button><button id="touchInteract" aria-label="관람하기">관람 <b>E</b></button></div>
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
