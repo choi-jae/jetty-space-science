@@ -10,3 +10,365 @@
 .avatar-status.failed {background:#fff0ef; color:#b34242;}
 #enterBtn:disabled {opacity:.55; cursor:not-allowed; filter:grayscale(.4)}
 #touchWave {background:#e7fff8; color:#174b4d; font-weight:750; border:1px solid #a4e4d5; border-radius:12px; padding:12px 14px; touch-action:manipulation;}
+
+/* JETTY SPACE v0.8 – adaptive phone/tablet/desktop controls */
+html,body{width:100%;height:100%;height:100dvh;overscroll-behavior:none}
+#viewport,#viewport canvas{touch-action:none}#viewport{height:100%;height:100dvh}
+.device-menu,.device-chat,.drawer-close,.ui-backdrop,.touch-look-hint{display:none}
+button{ -webkit-tap-highlight-color:transparent }
+button:focus-visible{outline:3px solid #198bd8;outline-offset:2px}
+#chatInput{font-size:16px}
+html[data-device="phone"] .controls,html[data-device="tablet"] .controls{display:none}
+html:is([data-device="phone"],[data-device="tablet"]) .topbar{height:calc(58px + env(safe-area-inset-top));padding:env(safe-area-inset-top) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));background:linear-gradient(180deg,#f2fbfff5,#f2fbff95);gap:6px}
+html:is([data-device="phone"],[data-device="tablet"]) .brand{font-size:clamp(13px,2.8vw,19px);letter-spacing:.2px;gap:5px}
+html:is([data-device="phone"],[data-device="tablet"]) .brand-icon{font-size:23px}
+html:is([data-device="phone"],[data-device="tablet"]) .brand-tag,html:is([data-device="phone"],[data-device="tablet"]) .help-button,html:is([data-device="phone"],[data-device="tablet"]) .connection{display:none}
+html:is([data-device="phone"],[data-device="tablet"]) .header-actions{gap:6px}
+html:is([data-device="phone"],[data-device="tablet"]) .visitor-count{padding:7px 9px;font-size:10px;white-space:nowrap}
+html:is([data-device="phone"],[data-device="tablet"]) .device-menu,html:is([data-device="phone"],[data-device="tablet"]) .device-chat{display:flex;gap:4px;align-items:center;justify-content:center;border:1px solid #b8d9e6;background:#fff;border-radius:12px;color:#254d66;min-height:42px;padding:6px 10px;font-size:13px;font-weight:800}
+html:is([data-device="phone"],[data-device="tablet"]) .ui-backdrop{display:block;position:fixed;inset:0;z-index:6;background:#092d4b8c;opacity:0;pointer-events:none;transition:opacity .2s}
+html:is([data-device="phone"],[data-device="tablet"]) body:is(.menu-open,.chat-open) .ui-backdrop{opacity:1;pointer-events:auto}
+html:is([data-device="phone"],[data-device="tablet"]) .left-panel{position:fixed;z-index:7;top:calc(10px + env(safe-area-inset-top));bottom:calc(10px + env(safe-area-inset-bottom));left:calc(10px + env(safe-area-inset-left));width:min(325px,calc(100vw - 42px));max-height:none;overflow-y:auto;padding:26px 22px;transform:translateX(calc(-100% - 30px));transition:transform .22s;pointer-events:none}
+html:is([data-device="phone"],[data-device="tablet"]) body.menu-open .left-panel{transform:translateX(0);pointer-events:auto}
+html:is([data-device="phone"],[data-device="tablet"]) .left-panel .intro{display:block}
+html:is([data-device="phone"],[data-device="tablet"]) .left-panel h1{font-size:32px}
+html:is([data-device="phone"],[data-device="tablet"]) .left-panel .panel-divider{margin:22px 0}
+html:is([data-device="phone"],[data-device="tablet"]) .left-panel .exhibit-link{padding:15px 7px}
+html:is([data-device="phone"],[data-device="tablet"]) .left-panel .exhibit-link strong{font-size:15px}
+html:is([data-device="phone"],[data-device="tablet"]) .left-panel .exhibit-link small{font-size:12px}
+html:is([data-device="phone"],[data-device="tablet"]) .drawer-close{display:grid;place-items:center;position:absolute;right:13px;top:12px;border:1px solid #a8cfde;background:#fff;border-radius:10px;width:40px;height:40px;color:#2a556b}
+html:is([data-device="phone"],[data-device="tablet"]) .chat-panel{position:fixed;z-index:7;top:auto;right:calc(10px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));width:min(365px,calc(100vw - 20px));max-height:min(65dvh,500px);transform:translateY(calc(100% + 35px));transition:transform .2s;pointer-events:none}
+html:is([data-device="phone"],[data-device="tablet"]) body.chat-open .chat-panel{transform:translateY(0);pointer-events:auto}
+html:is([data-device="phone"],[data-device="tablet"]) .chat-panel .messages{height:clamp(110px,26dvh,230px);font-size:13px}
+html:is([data-device="phone"],[data-device="tablet"]) .chat-panel .chat-header{height:51px;font-size:12px}
+html:is([data-device="phone"],[data-device="tablet"]) .chat-panel .chat-header button{font-size:27px;min-width:44px;min-height:44px}
+html:is([data-device="phone"],[data-device="tablet"]) .chat-input input{font-size:16px;padding:14px}
+html:is([data-device="phone"],[data-device="tablet"]) #touchControls{position:fixed;z-index:4;bottom:calc(12px + env(safe-area-inset-bottom));left:max(14px,env(safe-area-inset-left));right:max(14px,env(safe-area-inset-right));display:flex;align-items:flex-end;justify-content:space-between;pointer-events:none;gap:10px;opacity:0;visibility:hidden;transition:opacity .2s}
+html:is([data-device="phone"],[data-device="tablet"]) body.in-world #touchControls{opacity:1;visibility:visible}
+html:is([data-device="phone"],[data-device="tablet"]) body:is(.menu-open,.chat-open) #touchControls{opacity:0;pointer-events:none}
+html:is([data-device="phone"],[data-device="tablet"]) body:has(.overlay:not(.hidden)) #touchControls{opacity:0;pointer-events:none}
+html:is([data-device="phone"],[data-device="tablet"]) .joystick-wrap{display:flex;flex-direction:column;align-items:center;gap:5px}
+html:is([data-device="phone"],[data-device="tablet"]) .touch-caption{color:#244f63;font-size:12px;font-weight:800;text-shadow:0 1px 3px #fff}
+html:is([data-device="phone"],[data-device="tablet"]) #joystick{width:112px;height:112px;border:2px solid #78c5d0;border-radius:50%;background:#ffffffbd;box-shadow:0 5px 20px #0c527a36;display:grid;place-items:center;pointer-events:auto;touch-action:none}
+html:is([data-device="phone"],[data-device="tablet"]) #stick{width:46px;height:46px;background:#53d1bd;border:2px solid #c7fff2;box-shadow:0 3px 12px #266f8066}
+html:is([data-device="phone"],[data-device="tablet"]) .touch-buttons{display:flex;align-items:flex-end;gap:9px}
+html:is([data-device="phone"],[data-device="tablet"]) .touch-buttons button{pointer-events:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:64px;min-height:64px;border:1px solid #a6d4e3;border-radius:18px;background:#fffffff0;color:#24526a;box-shadow:0 6px 18px #10527833;font-size:23px}
+html:is([data-device="phone"],[data-device="tablet"]) .touch-buttons button span{font-size:11px;font-weight:800}
+html:is([data-device="phone"],[data-device="tablet"]) #touchRun.active{background:#34bba8;color:#fff;border-color:#2d9f90}
+html:is([data-device="phone"],[data-device="tablet"]) #touchInteract.available{background:#defcf5;border:2px solid #2eaf9c}
+html:is([data-device="phone"],[data-device="tablet"]) .touch-look-hint{display:block;position:fixed;z-index:4;bottom:calc(135px + env(safe-area-inset-bottom));right:14px;padding:7px 10px;background:#ffffffe5;color:#46758b;font-size:11px;border-radius:20px;pointer-events:none;opacity:0}
+html:is([data-device="phone"],[data-device="tablet"]) body.in-world .touch-look-hint{opacity:.85}
+html:is([data-device="phone"],[data-device="tablet"]) body:is(.menu-open,.chat-open) .touch-look-hint{display:none}
+html:is([data-device="phone"],[data-device="tablet"]) .interact{bottom:calc(142px + env(safe-area-inset-bottom));max-width:80vw;white-space:nowrap}
+html:is([data-device="phone"],[data-device="tablet"]) #reticle{display:none}
+html:is([data-device="phone"],[data-device="tablet"]) .welcome-card,html:is([data-device="phone"],[data-device="tablet"]) .info-card{max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;padding:25px}
+html:is([data-device="phone"],[data-device="tablet"]) .overlay{padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom))}
+html[data-device="phone"] .topbar .brand{font-size:13px}
+html[data-device="phone"] .visitor-count span:last-child{display:none}
+html[data-device="phone"] .device-menu span,html[data-device="phone"] .device-chat span{display:none}
+html[data-device="phone"] .device-menu,html[data-device="phone"] .device-chat{width:43px;padding:5px}
+html[data-device="phone"] #joystick{width:95px;height:95px}
+html[data-device="phone"] #stick{width:40px;height:40px}
+html[data-device="phone"] .touch-buttons{gap:6px}
+html[data-device="phone"] .touch-buttons button{min-width:53px;min-height:58px;font-size:20px;border-radius:14px}
+html[data-device="phone"] .touch-buttons button span{font-size:10px}
+html[data-device="tablet"] #joystick{width:125px;height:125px}
+html[data-device="tablet"] .touch-buttons button{min-width:76px;min-height:76px}
+@media(max-height:530px) and (pointer:coarse){html:is([data-device="phone"],[data-device="tablet"]) #joystick{width:76px;height:76px}html:is([data-device="phone"],[data-device="tablet"]) .touch-buttons button{min-height:52px;min-width:52px}html:is([data-device="phone"],[data-device="tablet"]) .touch-look-hint{display:none}html:is([data-device="phone"],[data-device="tablet"]) .left-panel{width:min(325px,60vw)}}
+@media(prefers-reduced-motion:reduce){html:is([data-device="phone"],[data-device="tablet"]) .left-panel,html:is([data-device="phone"],[data-device="tablet"]) .chat-panel{transition:none}}
+html[data-device="desktop"] #touchControls{display:none}
+html[data-device="desktop"] .touch-look-hint{display:none}
+/* Make the touch joystick available for the entire drag, without page scrolling. */
+html:is([data-device="phone"],[data-device="tablet"]) #touchControls button,html:is([data-device="phone"],[data-device="tablet"]) #joystick{touch-action:none}
+
+.drawer-help{display:none}html:is([data-device="phone"],[data-device="tablet"]) .drawer-help{display:block;margin-top:22px;padding:12px 14px;width:100%;color:#235c75;background:#e4f9f5;border:1px solid #a6d9dc;border-radius:12px;font-weight:700}
+
+
+/* v0.8.1: panel controls on every screen, browser device toolbar support, desktop joystick */
+html[data-device="desktop"] .device-menu,
+html[data-device="desktop"] .joystick-toggle{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:38px;padding:7px 12px;border:1px solid #b8d9e6;background:#fff;border-radius:12px;color:#254d66;font-size:12px;font-weight:800}
+html[data-device="desktop"] .drawer-close{display:grid;place-items:center;position:absolute;right:10px;top:10px;width:37px;height:37px;border:1px solid #a8cfde;border-radius:10px;background:#fff;color:#2a556b;z-index:2}
+html[data-device="desktop"] body.panel-hidden .left-panel{display:none}
+html[data-device="desktop"] .left-panel{padding-top:39px}
+html[data-device="desktop"] #touchControls{display:flex;position:fixed;left:22px;bottom:22px;z-index:4;pointer-events:none}
+html[data-device="desktop"] #touchControls .joystick-wrap{display:flex;align-items:center;flex-direction:column;gap:6px}
+html[data-device="desktop"] #touchControls .touch-caption{font-size:12px;font-weight:800;color:#23556a;text-shadow:0 1px #fff}
+html[data-device="desktop"] #joystick{display:grid;place-items:center;width:108px;height:108px;border:2px solid #78c5d0;border-radius:50%;background:#ffffffd9;box-shadow:0 5px 20px #0c527a36;pointer-events:auto;touch-action:none;cursor:grab}
+html[data-device="desktop"] #joystick:active{cursor:grabbing}
+html[data-device="desktop"] #stick{width:44px;height:44px;border-radius:50%;background:#53d1bd;border:2px solid #c7fff2;box-shadow:0 3px 12px #266f8066}
+html[data-device="desktop"] #touchControls .touch-buttons{display:none}
+html[data-device="desktop"] body.joystick-hidden #touchControls{display:none}
+html[data-device="desktop"] .controls{left:calc(50% - 145px);bottom:25px}
+html:is([data-device="phone"],[data-device="tablet"]) .joystick-toggle{display:none}
+html:is([data-device="phone"],[data-device="tablet"]) body.joystick-hidden #touchControls{display:flex}
+html:is([data-device="phone"],[data-device="tablet"]) .left-panel .drawer-close{display:grid!important;z-index:10;cursor:pointer;pointer-events:auto}
+/* The draggable puck is circular on all form factors. */
+#stick{border-radius:50%}
+@media(max-width:1160px){html[data-device="desktop"] .controls{left:175px;right:150px;justify-content:center}}
+@media(max-height:550px){html[data-device="desktop"] #joystick{width:80px;height:80px}}
+
+/* v0.9 — GLB avatar customization studio */
+.customize-open{display:none;align-items:center;gap:5px;min-height:38px;padding:7px 12px;border:1px solid #9dcfca;border-radius:12px;background:#e7faf6;color:#1b6f63;font-size:12px;font-weight:800;white-space:nowrap}
+body.in-world .customize-open{display:inline-flex}
+.welcome-overlay .welcome-card{width:min(97vw,850px);padding:25px 32px;max-height:calc(100dvh - 32px);overflow:auto}
+.welcome-overlay .welcome-mark{font-size:26px;margin-bottom:4px}
+.welcome-overlay .welcome-card h2{font-size:23px;margin:7px 0}
+.welcome-overlay .welcome-card p{margin:8px 0;font-size:12px}
+.welcome-overlay .welcome-card label{margin:9px 0 5px}
+.welcome-overlay .welcome-card input{padding:9px}
+.customizer{display:grid;grid-template-columns:minmax(180px,.9fr) minmax(240px,1.1fr);gap:16px;margin:12px 0;text-align:left}
+.avatar-preview{width:100%;height:310px;min-height:210px;position:relative;overflow:hidden;border-radius:15px;background:#eaf9ff;border:1px solid #b6d8e5;touch-action:none;user-select:none}
+.avatar-preview canvas{width:100%;height:100%;display:block;touch-action:none}
+.preview-hint{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);z-index:1;pointer-events:none;background:#ffffffb8;padding:5px 10px;color:#316b7f;font-size:11px;border-radius:20px;white-space:nowrap}
+.customize-panel{overflow-y:auto;max-height:310px;padding:0 4px 5px 0}
+.customize-category h3{margin:9px 0 7px;font-size:12px;color:#356d7d}
+.customize-category:first-child h3{margin-top:0}
+.customize-options{display:flex;flex-wrap:wrap;gap:6px}
+.customize-choice{min-height:34px;padding:7px 11px;border-radius:9px;border:1px solid #c6dde4;background:#fff;color:#425e72;font-size:11px;font-weight:700}
+.customize-choice.selected{background:#c5f4e8;border-color:#2db39e;color:#136b58;box-shadow:inset 0 0 0 1px #2db39e}
+.customize-choice:focus-visible,.customize-open:focus-visible{outline:3px solid #5bafef;outline-offset:2px}
+.entry-customize-note{font-size:11px!important;color:#4b7384}
+.customize-actions .primary[hidden]{display:none}
+.customize-dialog{position:relative;width:min(94vw,875px);max-height:calc(100dvh - 25px);overflow-y:auto;border-radius:20px;background:linear-gradient(145deg,#fff,#e8f8ff);border:1px solid #b6d9e8;padding:30px;box-shadow:0 20px 80px #0006}
+.customize-dialog h2{font-size:25px;margin:8px 0}
+.customize-dialog>p{font-size:12px;color:#54728a;line-height:1.7}
+.customize-dialog #customizer{margin-top:20px}
+.customize-dialog .customize-panel{max-height:360px}
+.customize-dialog .avatar-preview{height:360px}
+.customize-dialog .customize-actions{max-width:400px;margin-left:auto}
+#customizeOverlay{z-index:14}
+html:is([data-device="phone"],[data-device="tablet"]) .customize-open{display:none}
+html:is([data-device="phone"],[data-device="tablet"]) body.in-world .customize-open{display:inline-flex}
+html[data-device="phone"] .customize-open span{display:none}
+html[data-device="phone"] .customize-open{min-width:43px;min-height:40px;justify-content:center;padding:4px}
+html[data-device="phone"] .welcome-overlay .welcome-card{padding:16px;width:min(100%,520px)}
+html[data-device="phone"] .customizer{grid-template-columns:1fr;gap:9px}
+html[data-device="phone"] .avatar-preview{height:190px;min-height:190px}
+html[data-device="phone"] .customize-panel{max-height:none}
+html[data-device="phone"] .customize-dialog{padding:22px 15px}
+html[data-device="phone"] .customize-dialog .avatar-preview{height:210px;min-height:210px}
+html[data-device="tablet"] .customizer{grid-template-columns:minmax(180px,1fr) minmax(210px,1fr)}
+html[data-device="phone"] .brand-tag{display:none}
+html[data-device="phone"] .header-actions{gap:5px}
+html[data-device="phone"] .customize-choice{font-size:12px;min-height:39px}
+@media(max-height:570px){.welcome-overlay .welcome-card{padding:12px 18px}.welcome-overlay .welcome-mark{display:none}.welcome-overlay .avatar-preview{height:180px;min-height:180px}.welcome-overlay .customize-panel{max-height:200px}}
+
+/* v0.9.1: expanded customization packs and compact-screen usability */
+.customize-category{padding-bottom:5px}
+.customize-panel{scrollbar-width:thin;overscroll-behavior:contain}
+.customize-choice{min-height:38px}
+@media(max-width:650px){
+ .customizer{grid-template-columns:1fr;gap:9px}
+ .avatar-preview{height:min(32dvh,235px);min-height:155px}
+ .customize-panel{max-height:min(36dvh,310px)}
+ .customize-choice{min-height:42px;padding:9px 10px}
+ .customize-dialog{max-height:calc(100dvh - 16px);overflow-y:auto}
+}
+
+
+/* v0.9.2 — phone-first fullscreen avatar studio */
+.customize-tabs{display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;padding:3px 2px 9px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;flex-shrink:0}
+.customize-tab{flex:0 0 auto;scroll-snap-align:start;min-height:41px;padding:8px 14px;border:1px solid #c1dce5;border-radius:12px;background:white;color:#42657b;font-size:13px;font-weight:750;white-space:nowrap}
+.customize-tab.active{background:#d8f8ee;color:#126d5a;border-color:#39b79e;box-shadow:inset 0 0 0 1px #39b79e}
+.customize-tab:focus-visible{outline:3px solid #5bafef;outline-offset:2px}
+.customize-category{display:none}
+.customize-category.active{display:block}
+.customize-category.active h3{font-size:14px;margin:6px 0 12px}
+.customize-choice{min-height:45px;font-size:13px;padding:10px 13px}
+.customize-panel{max-height:230px;min-height:115px;padding:4px;overflow-y:auto}
+.customize-dialog .customize-panel{max-height:250px}
+@media(max-width:750px), (max-height:520px) and (pointer:coarse){
+  .overlay.welcome-overlay,#customizeOverlay{padding:0!important;inset:0;place-items:stretch;align-items:stretch;justify-items:stretch}
+  .welcome-overlay .welcome-card,html[data-device=phone] .welcome-overlay .welcome-card,
+  #customizeOverlay .customize-dialog,html[data-device=phone] .customize-dialog{
+    display:flex;flex-direction:column;box-sizing:border-box;
+    position:relative;margin:0;width:100%;max-width:none;height:100dvh;max-height:100dvh;
+    border-radius:0;border:0;overflow-y:auto;overscroll-behavior:contain;
+    padding:calc(12px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));
+  }
+  .welcome-overlay .welcome-card{padding-left:14px!important;padding-right:14px!important}
+  .welcome-overlay .welcome-mark{display:none}
+  .welcome-overlay .welcome-card h2,#customizeOverlay .customize-dialog h2{font-size:22px;margin:4px 0 5px}
+  .welcome-overlay .welcome-card>p{line-height:1.35;font-size:11px;margin:3px 0}
+  .welcome-overlay .welcome-card>p br{display:none}
+  .welcome-overlay .welcome-card label{margin:7px 0 4px;font-size:12px}
+  .welcome-overlay .welcome-card input{padding:10px;font-size:16px}
+  .welcome-overlay .avatar-status{margin:6px 0;font-size:11px;padding:5px 8px}
+  .welcome-overlay #entryCustomizerMount,#customizeOverlay #customizeRuntimeMount{display:block;min-height:0;width:100%}
+  .customizer,html[data-device=phone] .customizer,html[data-device=tablet] .customizer{
+    display:flex;flex-direction:column;gap:7px;margin:6px 0;width:100%;min-width:0
+  }
+  .avatar-preview,html[data-device=phone] .avatar-preview,
+  .customize-dialog .avatar-preview,html[data-device=phone] .customize-dialog .avatar-preview{
+    width:100%;height:clamp(220px,36dvh,390px);min-height:220px;flex:none
+  }
+  .customize-dialog #customizer{margin-top:7px}
+  .customize-dialog>p{font-size:11px;line-height:1.35;margin:4px 0}
+  .customize-tabs{margin:0 -2px;gap:6px}
+  .customize-tab{min-height:43px;font-size:13px;padding:9px 12px}
+  .customize-panel,html[data-device=phone] .customize-panel,
+  .customize-dialog .customize-panel{max-height:210px;min-height:95px;overflow:auto}
+  .customize-options{gap:8px}
+  .customize-choice,html[data-device=phone] .customize-choice{font-size:13px;min-height:44px;padding:9px 12px}
+  .entry-customize-note{font-size:10px!important;margin:4px 0!important}
+  .welcome-overlay .primary,#customizeOverlay #customizeApply{
+    position:sticky;bottom:0;z-index:4;flex:0 0 auto;min-height:52px;font-size:15px;
+    margin-top:8px;box-shadow:0 -4px 16px #e8f8ff;padding:12px 15px
+  }
+  .welcome-overlay .welcome-card>small{margin-top:5px;font-size:9px}
+  #customizeOverlay .close{position:fixed;top:calc(12px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));z-index:20;width:44px;height:44px}
+  #customizeOverlay .customize-dialog h2{padding-right:48px}
+}
+@media(max-width:950px) and (max-height:520px) and (orientation:landscape){
+  .avatar-preview,html[data-device=phone] .avatar-preview,
+  .customize-dialog .avatar-preview{height:clamp(150px,37dvh,245px);min-height:150px}
+  .welcome-overlay .welcome-card h2,#customizeOverlay .customize-dialog h2{font-size:19px}
+}
+
+/* v0.9.3 — robust mobile viewport-studio fix.
+   Make the entry and edit layers viewport-fixed rather than relying on an
+   absolutely positioned grid's containing block or intrinsically sized track. */
+@media screen and (max-width: 850px) {
+  html, body { width: 100% !important; min-width: 0 !important; overflow: hidden; }
+  #welcomeOverlay, #customizeOverlay {
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    width: 100dvw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    overflow: hidden !important;
+    z-index: 100 !important;
+    transform: none !important;
+    contain: layout style;
+    background: #e9f8ff !important;
+  }
+  #welcomeOverlay.hidden, #customizeOverlay.hidden { display: none !important; }
+  #welcomeOverlay > .welcome-card, #customizeOverlay > .customize-dialog {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    align-self: stretch !important;
+    position: relative !important;
+    inset: auto !important;
+    margin: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    padding: calc(12px + env(safe-area-inset-top)) max(15px, env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(15px, env(safe-area-inset-left)) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    box-shadow: none !important;
+  }
+  #welcomeOverlay .customizer, #customizeOverlay .customizer {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    flex: 0 0 auto;
+  }
+  #welcomeOverlay .avatar-preview, #customizeOverlay .avatar-preview {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: clamp(220px, 39dvh, 355px) !important;
+    min-height: 220px !important;
+    flex: 0 0 auto !important;
+  }
+  #welcomeOverlay #entryCustomizerMount, #customizeOverlay #customizeRuntimeMount,
+  #welcomeOverlay .customize-panel, #customizeOverlay .customize-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  #welcomeOverlay .customize-panel, #customizeOverlay .customize-panel {
+    max-height: 220px !important;
+    min-height: 100px !important;
+  }
+  #welcomeOverlay .primary, #customizeOverlay #customizeApply {
+    flex: 0 0 auto !important;
+    position: sticky;
+    bottom: 0;
+    min-height: 52px;
+    z-index: 5;
+  }
+  #customizeOverlay #customizeCancel {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    top: calc(10px + env(safe-area-inset-top));
+    z-index: 110;
+  }
+}
+
+
+/* v0.9.4: return to the clean v0.9 compact choice layout.
+   One preview + one panel; all categories show as small grouped chips. */
+#customizer.customizer {display:grid; grid-template-columns:minmax(0, .94fr) minmax(0, 1.06fr);gap:16px;align-items:start;width:100%;min-width:0;}
+#customizer .customize-tabs {display:none!important;}
+#customizer .customize-panel {display:block!important; min-width:0; width:100%; min-height:0; max-height:335px;overflow-y:auto;overflow-x:hidden;padding:2px 7px 5px 2px;overscroll-behavior:contain;}
+#customizer .customize-category,#customizer .customize-category.active {display:block!important;margin:0 0 9px;padding:0 0 8px;border-bottom:1px solid #d8eaf0;}
+#customizer .customize-category h3,#customizer .customize-category.active h3 {margin:2px 0 6px;font-size:12px;line-height:1.4;color:#31677b;}
+#customizer .customize-options {display:flex;flex-wrap:wrap;align-items:flex-start;gap:5px;}
+#customizer .customize-choice {flex:0 0 auto;min-height:34px;padding:6px 10px;font-size:11px;line-height:1.35;border-radius:8px;}
+#customizer .avatar-preview {width:100%;min-width:0;height:330px;min-height:0;}
+#customizer .preview-hint {pointer-events:none;}
+@media (max-width: 980px) {
+  #customizer.customizer, html[data-device=phone] #customizer.customizer, html[data-device=tablet] #customizer.customizer {
+    display:flex!important;flex-direction:column!important;gap:10px!important;width:100%!important;margin:8px 0!important;
+  }
+  #welcomeOverlay .avatar-preview,#customizeOverlay .avatar-preview,
+  #customizer .avatar-preview, html[data-device=phone] #customizer .avatar-preview {
+    width:100%!important;height:clamp(205px,35dvh,320px)!important;min-height:205px!important;
+  }
+  #customizer .customize-panel,html[data-device=phone] #customizer .customize-panel {
+    width:100%!important;max-height:clamp(180px,29dvh,275px)!important;min-height:170px!important;overflow:auto!important;
+  }
+  #customizer .customize-category h3,#customizer .customize-category.active h3{font-size:12px;}
+  #customizer .customize-choice,html[data-device=phone] #customizer .customize-choice{min-height:38px;font-size:12px;padding:7px 10px;}
+}
+@media (max-width:980px){
+  #welcomeOverlay,#customizeOverlay{position:fixed!important;inset:0!important;width:100dvw!important;height:100dvh!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;z-index:100!important;padding:0!important;}
+  #welcomeOverlay.hidden,#customizeOverlay.hidden{display:none!important;}
+  #welcomeOverlay>.welcome-card,#customizeOverlay>.customize-dialog{display:flex!important;flex-direction:column!important;width:100%!important;max-width:none!important;min-width:0!important;min-height:0!important;height:100%!important;max-height:none!important;border-radius:0!important;margin:0!important;padding:calc(10px + env(safe-area-inset-top)) 15px calc(10px + env(safe-area-inset-bottom))!important;overflow-y:auto!important;overflow-x:hidden!important;}
+}
+@media (max-width:390px), (max-height:660px) and (max-width:980px){
+ #welcomeOverlay .avatar-preview,#customizeOverlay .avatar-preview,#customizer .avatar-preview{height:clamp(180px,29dvh,245px)!important;min-height:180px!important;}
+ #customizer .customize-panel{max-height:190px!important;min-height:130px!important;}
+}
+
+/* v0.9.5: compact palettes; existing v0.9.4 grouped selectors preserved. */
+.customize-category .color-palette{margin:8px 0 6px;padding:8px 10px;background:#f4fbff;border:1px solid #d1e6ed;border-radius:11px}
+.palette-label{font-weight:800;font-size:11px;color:#456b7b;margin-bottom:7px}
+.palette-swatches{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.color-swatch{flex:0 0 27px;width:27px;height:27px;padding:0;border-radius:50%;background:var(--swatch);border:2px solid #fff;box-shadow:0 0 0 1px #b5c7d1;cursor:pointer;min-width:27px}
+.color-swatch.selected{outline:3px solid #20bba4;outline-offset:2px}
+.color-swatch:focus-visible{outline:3px solid #126a99;outline-offset:2px}
+@media (max-width:820px){.color-swatch{width:34px;height:34px;flex-basis:34px}}
+
+/* v0.9.6: immersive same-page mechanics simulator. */
+.spring-lab-overlay{position:fixed;inset:0;inset-block:0;z-index:99999;display:flex;flex-direction:column;overflow:hidden;background:#f4f7fb;overscroll-behavior:contain}
+.spring-lab-overlay.hidden{display:none!important}
+.spring-lab-toolbar{flex:0 0 auto;min-height:62px;padding:calc(8px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 8px max(14px,env(safe-area-inset-left));display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border-bottom:1px solid #d7e6ed;box-shadow:0 2px 8px #143b5322;color:#23516d;font-weight:850;font-size:14px}
+.spring-lab-toolbar button{min-height:44px;padding:9px 14px;border:1px solid #8dcabc;border-radius:12px;background:#ddf9ee;color:#16604f;font-size:13px;font-weight:850;cursor:pointer;touch-action:manipulation}
+.spring-lab-overlay iframe{flex:1 1 auto;display:block;width:100%;min-height:0;border:0;background:#f4f7fb}
+body.spring-lab-open{overflow:hidden}
+body.spring-lab-open #touchControls,body.spring-lab-open #lookHint{pointer-events:none}
+@media(max-width:480px){.spring-lab-toolbar{font-size:12px;min-height:56px}.spring-lab-toolbar button{font-size:12px;padding:8px 10px}}

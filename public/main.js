@@ -1,17 +1,28 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import {DEFAULT_LOOK,LOOK_OPTIONS,LOOK_LABELS,cleanLook,sameLook,loadAvatarAssets,buildAvatarModel} from './avatar-parts.js';
 import {moveWithCollisions, isFree} from './world-collision.js';
 
 const $ = id => document.getElementById(id);
 const viewport = $('viewport');
 const isTouch = matchMedia('(pointer: coarse)').matches;
+// Respond to CSS device emulation as well as real touch hardware.
+// Width-based fallback matters because Chrome device toolbar can emulate a phone
+// without reporting a coarse pointer in every browser/version.
+const updateDeviceMode = () => {
+ const narrow = innerWidth <= 820;
+ const tabletLike = isTouch && innerWidth <= 1366;
+ const mode = narrow ? (Math.min(innerWidth, innerHeight) <= 600 ? 'phone' : 'tablet') : (tabletLike ? 'tablet' : 'desktop');
+ document.documentElement.dataset.device = mode;
+ return mode;
+};
+updateDeviceMode();
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xdff4ff);
 scene.fog = new THREE.FogExp2(0xdff4ff,0.005);
 const camera = new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,150);
 const renderer = new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setPixelRatio(Math.min(devicePixelRatio,isTouch?1.5:2));
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -51,7 +62,7 @@ function board(title,sub,x,y,z,w=5,h=1.25,color='#89ebda'){
 // JETTY SPACE v0.2 — bright museum with modular halls and twelve experiment bays.
 scene.add(new THREE.HemisphereLight(0xf8ffff,0xa4b9cd,2.45));
 const sunLight=new THREE.DirectionalLight(0xffffff,2.15);sunLight.position.set(-12,24,10);sunLight.castShadow=true;
-sunLight.shadow.mapSize.set(2048,2048);sunLight.shadow.camera.left=-29;sunLight.shadow.camera.right=29;
+sunLight.shadow.mapSize.set(isTouch?1024:2048,isTouch?1024:2048);sunLight.shadow.camera.left=-29;sunLight.shadow.camera.right=29;
 sunLight.shadow.camera.top=25;sunLight.shadow.camera.bottom=-25;sunLight.shadow.bias=-.00025;scene.add(sunLight);
 const accent={mechanics:0x65ccb4,electromagnetism:0xb9a3ed,waves:0x72c8ec};
 const roomFloor={mechanics:material(0xe6faf1),electromagnetism:material(0xf1ecff),waves:material(0xe5f6ff)};
@@ -127,6 +138,28 @@ function hallDecor(hall,x,z,color,title,subtitle){
 hallDecor('mechanics',-15,-5,accent.mechanics,'01 · 역학관','MECHANICS · MOTION & ENERGY');
 hallDecor('electromagnetism',15,-5,accent.electromagnetism,'02 · 전자기관','ELECTRICITY & MAGNETISM');
 hallDecor('waves',0,-11,accent.waves,'03 · 파동관','VIBRATION & WAVES');
+// v0.9.5: static vertical mass-spring apparatus (equilibrium illustration, no animation).
+// Physical spring axis and mass center coincide. This is an interactive museum entry
+// point for the previously built single-oscillator teaching simulator.
+const springStation=experimentSlots.mechanics[0];
+const springX=springStation.x+.05, springZ=springStation.z+.2;
+const springSteel=material(0x637b92,{metalness:.66,roughness:.27});
+const springMassMat=material(0x79b8d8,{metalness:.21,roughness:.38});
+const standBase=box(1.05,.09,.63,springSteel,springX,.69,springZ);
+cylinder(.045,.045,1.68,springSteel,springX-.43,1.58,springZ);
+box(.87,.065,.065,springSteel,springX-.035,2.4,springZ);
+// Coil joins two short straight ends: upper end y=2.35, lower y=1.40.
+const helixPoints=[];const turns=13;const sections=turns*18;
+for(let i=0;i<=sections;i++){
+ const t=i/sections, angle=t*turns*Math.PI*2;
+ helixPoints.push(new THREE.Vector3(springX+.13*Math.cos(angle),2.31-.85*t,springZ+.13*Math.sin(angle)));
+}
+const springCoil=mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(helixPoints),sections,.019,7,false),springSteel,0,0,0);
+const springMass=box(.34,.34,.34,springMassMat,springX,1.24,springZ);springMass.castShadow=true;
+const springGuide=board('용수철 단진동','E · 실험 장치 살펴보기',springX,2.98,springZ-.74,2.5,.54,'#4e91a3');
+const SPRING_SIMULATOR_URL='/spring-lab.html'; // Same-origin HTML simulator bundled with this project.
+const SPRING_EXHIBIT_ID='spring-mass';
+
 // Lightweight animated decorative installations (not quantitative physics experiments).
 const ornaments=[];
 for(const [x,z,col,kind] of [[-15,-5,accent.mechanics,'mechanics'],[15,-5,accent.electromagnetism,'electromagnetism'],[0,-11,accent.waves,'waves']]){
@@ -137,13 +170,15 @@ for(const [x,z,col,kind] of [[-15,-5,accent.mechanics,'mechanics'],[15,-5,accent
  ornaments.push({ring,kind});
 }
 // GLB avatar integration: preserve original textures and three built-in animation clips.
-// The downloaded GLB is a single male researcher model (female customizations will follow).
+// Base avatar with selectable male/female hairstyles, expressions and accessories.
 const avatars = new Map();
 let myId = null, ws = null, joined = false;
 const local = {x:0,z:7.2,rot:Math.PI};
 const visited = new Set();
-let avatarSource = null;
+let avatarAssets = null;
 let avatarClips = {};
+let selectedLook = {...DEFAULT_LOOK};
+let draftLook = {...selectedLook};
 let assetLoading = true;
 const avatarHeight = 1.85;
 const avatarStatus = $('avatarStatus');
@@ -162,9 +197,10 @@ function avatarLabel(name) {
 // We clone the model graph per visitor, so each has an independent AnimationMixer.
 // This GLB has no skins; animations target separate named mesh nodes.
 function makeAvatar(player,self=false) {
- if(!avatarSource) return null;
+ if(!avatarAssets) return null;
  const g=group(player.x,0,player.z);
- const model=avatarSource.clone(true);
+ const parts=buildAvatarModel(avatarAssets,player.avatar??DEFAULT_LOOK);
+ const model=parts.model;
  model.rotation.y=Math.PI; // GLB faces local +Z; our movement system faces local -Z.
  model.traverse(o=>{
    if(o.isMesh){
@@ -172,11 +208,13 @@ function makeAvatar(player,self=false) {
      o.receiveShadow = false;
    }
  });
- const box0=new THREE.Box3().setFromObject(model);
+ // Scale from the bare base only: inactive clothing/gear must not affect character height.
+ const box0=new THREE.Box3().setFromObject(avatarAssets.base.scene);
  const rawHeight=box0.max.y-box0.min.y;
  if(rawHeight>0.001)model.scale.setScalar(avatarHeight/rawHeight);
  model.updateMatrixWorld(true);
- const box1=new THREE.Box3().setFromObject(model);
+ const box1=new THREE.Box3().setFromObject(avatarAssets.base.scene);
+ box1.min.multiplyScalar(model.scale.x);box1.max.multiplyScalar(model.scale.x);
  const center=box1.getCenter(new THREE.Vector3());
  model.position.set(-center.x,-box1.min.y,-center.z);
  g.add(model);
@@ -185,7 +223,7 @@ function makeAvatar(player,self=false) {
  nameplate.position.set(0,2.28,0);nameplate.scale.set(1.85,.38,1);
  g.add(nameplate);
  g.rotation.y=player.rot??0;
- const avatar={g,model,nameplate,mixer,actions:{},animName:null,action:null,waveUntil:0,motionUntil:0,
+ const avatar={g,model,nameplate,mixer,parts,appearance:cleanLook(player.avatar),displayName:player.name,actions:{},animName:null,action:null,waveUntil:0,motionUntil:0,
    target:new THREE.Vector3(player.x,0,player.z),rotation:player.rot??0,self};
  avatars.set(player.id,avatar);
  setAvatarClip(avatar,'Idle');
@@ -223,13 +261,17 @@ function playWave(id,relay=false){
 function refreshAvatar(p){
  const a=avatars.get(p.id);
  if(!a){makeAvatar(p,p.id===myId);return}
- a.target.set(p.x,0,p.z);
- a.rotation=p.rot;
- a.g.remove(a.nameplate);
- a.nameplate.material.map.dispose();a.nameplate.material.dispose();
- a.nameplate=avatarLabel(p.name);
- a.nameplate.position.set(0,2.28,0);a.nameplate.scale.set(1.85,.38,1);
- a.g.add(a.nameplate);
+ a.target.set(p.x,0,p.z);a.rotation=p.rot;
+ if(p.avatar && !sameLook(a.appearance,p.avatar)){
+  a.parts.setLook(p.avatar);a.appearance=cleanLook(p.avatar);
+ }
+ if(a.displayName!==p.name){
+  a.g.remove(a.nameplate);
+  a.nameplate.material.map.dispose();a.nameplate.material.dispose();
+  a.nameplate=avatarLabel(p.name);
+  a.nameplate.position.set(0,2.28,0);a.nameplate.scale.set(1.85,.38,1);
+  a.g.add(a.nameplate);a.displayName=p.name;
+ }
 }
 function removeAvatar(id){
  const a=avatars.get(id);if(!a)return;
@@ -238,22 +280,171 @@ function removeAvatar(id){
  scene.remove(a.g); // Shared GLB geometry/materials are intentionally NOT disposed.
  avatars.delete(id);
 }
-// GLTFLoader module and its utility imports are served from the installed Three.js package.
-// If loading fails, entry remains disabled and a visible diagnostic appears.
-new GLTFLoader().load('/models/jetty_boy.glb',gltf=>{
- avatarSource=gltf.scene;
- avatarClips=Object.fromEntries(gltf.animations.map(c=>[c.name,c]));
+// Load all five real GLB assets before allowing entry.
+loadAvatarAssets((count,total)=>{
+ avatarStatus.textContent=`3D 캐릭터 파츠 불러오는 중… ${count} / ${total}`;
+}).then(assets=>{
+ avatarAssets=assets;
+ avatarClips=Object.fromEntries(assets.base.animations.map(c=>[c.name,c]));
+ setupAvatarPreview();
  assetLoading=false;
- avatarStatus.textContent='✓ GLB 로딩 완료 · 대기 / 걷기 / 손 흔들기';
+ avatarStatus.textContent='✓ 기본 캐릭터와 파츠 준비 완료 · 자유롭게 꾸며보세요';
  avatarStatus.classList.add('ready');
  $('enterBtn').disabled=false;
- console.info('[JETTY GLB] loaded',gltf.animations.map(c=>c.name));
-},undefined,error=>{
+ console.info('[JETTY CUSTOMIZER] loaded',Object.keys(assets),Object.keys(avatarClips));
+}).catch(error=>{
  assetLoading=false;
- avatarStatus.textContent='⚠ 3D 캐릭터를 불러오지 못했어. F12 → Console에서 오류를 확인해 줘.';
+ avatarStatus.textContent='⚠ GLB 모델을 불러오지 못했습니다. 개발자 도구 Console을 확인해 주세요.';
  avatarStatus.classList.add('failed');
- console.error('[JETTY GLB] load failed',error);
+ console.error('[JETTY CUSTOMIZER] load failed',error);
 });
+// --- Character customizer: shared UI between entry and in-world dialog. ---
+const customizerNode=$('customizer');
+const customizeButtons={};
+// v0.9.4: original v0.9 compact grouped selectors; no oversized category tabs.
+const paletteCategories={hair:'hairColor',outfit:'outfitColor',bottom:'bottomColor',gear:'gearColor',badge:'gearColor',gloves:'gearColor',hand:'gearColor',backpack:'gearColor'};
+const PALETTE_NAMES={hairColor:'머리색',outfitColor:'상의 색상',bottomColor:'하의 색상',gearColor:'장비 색상'};
+const COLOR_PALETTES={
+ hairColor:['#79503E','#30292B','#C89B54','#A45E55','#D98DB1','#8694C5','#E3D2A9'],
+ outfitColor:['#E8EEF6','#8EBED7','#F2BECC','#9BD3B0','#D2B5EE','#F2C47D','#4D6384'],
+ bottomColor:['#2F496F','#638EAC','#9A7DC3','#C48B95','#4D5963','#F5D8C9'],
+ gearColor:['#D3B66F','#6685A8','#82BDAE','#B28BD0','#D38C9D','#69777E'],
+};
+const categories=[
+ ['hair','헤어'],['face','표정'],['outfit','상의·의상'],['bottom','하의'],
+ ['gear','안경·고글'],['badge','명찰·배지'],['gloves','장갑'],['hand','손에 드는 도구'],['backpack','배낭'],
+];
+function setupCustomizationInputs(){
+ const panel=$('customizeOptions');
+ panel.replaceChildren();
+ for(const [category,title] of categories){
+  const section=document.createElement('section');
+  section.className='customize-category';
+  section.dataset.category=category;
+  const heading=document.createElement('h3');heading.textContent=title;section.append(heading);
+  const options=document.createElement('div');options.className='customize-options';
+  for(const name of LOOK_OPTIONS[category]){
+   const button=document.createElement('button');button.type='button';button.className='customize-choice';
+   button.textContent=name==='none'&&category==='outfit'?'기본 상의':name==='none'&&category==='bottom'?'기본 반바지':LOOK_LABELS[name];
+   button.dataset.category=category;button.dataset.part=name;
+   button.addEventListener('click',()=>{
+    draftLook=cleanLook({...draftLook,[category]:name});
+    updateCustomizeButtons();previewParts?.setLook(draftLook);
+   });
+   options.append(button);
+  }
+  section.append(options);
+  const colorKey=paletteCategories[category];
+  // Only present an independent palette once for shared gear categories.
+  if(colorKey && (category==='hair'||category==='outfit'||category==='bottom'||category==='gear')){
+   const palette=document.createElement('div');palette.className='color-palette';
+   const label=document.createElement('div');label.className='palette-label';label.textContent=PALETTE_NAMES[colorKey];palette.append(label);
+   const row=document.createElement('div');row.className='palette-swatches';
+   for(const hex of COLOR_PALETTES[colorKey]){
+    const button=document.createElement('button');button.type='button';button.className='color-swatch';
+    button.style.setProperty('--swatch',hex);button.title=hex;button.setAttribute('aria-label',`${PALETTE_NAMES[colorKey]} ${hex}`);
+    button.dataset.colorKey=colorKey;button.dataset.hex=hex;
+    button.addEventListener('click',()=>{draftLook=cleanLook({...draftLook,[colorKey]:hex});updateCustomizeButtons();previewParts?.setLook(draftLook);});
+    row.append(button);
+   }
+   palette.append(row);section.append(palette);
+  }
+  panel.append(section);
+ }
+ updateCustomizeButtons();
+}
+function updateCustomizeButtons(){
+ for(const button of document.querySelectorAll('.customize-choice')){
+  const active=draftLook[button.dataset.category]===button.dataset.part;
+  button.classList.toggle('selected',active);
+  button.setAttribute('aria-pressed',String(active));
+ }
+ for(const button of document.querySelectorAll('.color-swatch')){
+  const active=draftLook[button.dataset.colorKey]===button.dataset.hex;button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active));
+ }
+}
+let previewParts=null,previewRenderer=null,previewScene=null,previewCamera=null,previewMixer=null;
+let previewYaw=0,previewPointer=null,previewLastX=0,previewDrag=false;
+function setupAvatarPreview(){
+ const box=$('avatarPreview');
+ previewScene=new THREE.Scene();previewScene.background=new THREE.Color(0xf0fbff);
+ previewScene.add(new THREE.HemisphereLight(0xffffff,0xc5d9e5,3));
+ const light=new THREE.DirectionalLight(0xffffff,2.7);light.position.set(3,6,5);previewScene.add(light);
+ previewCamera=new THREE.PerspectiveCamera(37,1,.1,30);
+ previewCamera.position.set(0,1.05,4.5);previewCamera.lookAt(0,.98,0);
+ previewRenderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
+ previewRenderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+ previewRenderer.outputColorSpace=THREE.SRGBColorSpace;
+ previewRenderer.toneMapping=THREE.ACESFilmicToneMapping;
+ previewRenderer.toneMappingExposure=1.28;
+ box.append(previewRenderer.domElement);
+ previewParts=buildAvatarModel(avatarAssets,draftLook);
+ const model=previewParts.model;model.rotation.y=0;
+ const bounds=new THREE.Box3().setFromObject(avatarAssets.base.scene);
+ const height=bounds.max.y-bounds.min.y;
+ if(height>0.001)model.scale.setScalar(1.85/height);
+ model.updateMatrixWorld(true);
+ const after=new THREE.Box3().setFromObject(avatarAssets.base.scene);
+ after.min.multiplyScalar(model.scale.x);after.max.multiplyScalar(model.scale.x);
+ const center=after.getCenter(new THREE.Vector3());
+ model.position.set(-center.x,-after.min.y,-center.z);
+ const previewHolder=new THREE.Group();previewHolder.add(model);previewScene.add(previewHolder);
+ previewHolder.rotation.y=previewYaw;
+ previewMixer=new THREE.AnimationMixer(model);
+ const idle=avatarClips.Idle;
+ if(idle)previewMixer.clipAction(idle).play();
+ box.addEventListener('pointerdown',e=>{
+  if(e.target!==previewRenderer.domElement)return;
+  previewPointer=e.pointerId;previewLastX=e.clientX;previewDrag=true;
+  box.setPointerCapture(e.pointerId);
+ });
+ box.addEventListener('pointermove',e=>{
+  if(!previewDrag||e.pointerId!==previewPointer)return;
+  previewYaw+=(e.clientX-previewLastX)*.012;previewLastX=e.clientX;
+  previewHolder.rotation.y=previewYaw;
+ });
+ const stop=()=>{previewDrag=false;previewPointer=null};
+ box.addEventListener('pointerup',stop);box.addEventListener('pointercancel',stop);box.addEventListener('lostpointercapture',stop);
+ const tick=()=>{
+  requestAnimationFrame(tick);
+  if(!customizerNode.isConnected || (!joined?$('welcomeOverlay').classList.contains('hidden'):$('customizeOverlay').classList.contains('hidden')))return;
+  const width=Math.max(1,box.clientWidth),height=Math.max(1,box.clientHeight);
+  if(previewRenderer.domElement.width!==Math.floor(width*previewRenderer.getPixelRatio()) || previewRenderer.domElement.height!==Math.floor(height*previewRenderer.getPixelRatio())){
+   previewRenderer.setSize(width,height,false);previewCamera.aspect=width/height;previewCamera.updateProjectionMatrix();
+  }
+  previewMixer.update(Math.min(previewClock.getDelta(),.05));
+  previewRenderer.render(previewScene,previewCamera);
+ };
+ tick();
+}
+const previewClock=new THREE.Clock();
+setupCustomizationInputs();
+$('customizeOpen').addEventListener('click',()=>{
+ if(!joined || !avatarAssets)return;
+ closeMobileChat();closeMuseumMenu();resetStick();
+ draftLook={...selectedLook};updateCustomizeButtons();previewParts?.setLook(draftLook);
+ $('customizeRuntimeMount').append(customizerNode);
+ $('customizeOverlay').classList.remove('hidden');
+ $('customizeEntryNote').hidden=true;
+ previewClock.getDelta();
+});
+function closeCustomizer(apply){
+ if(apply){
+  selectedLook=cleanLook(draftLook);
+  const self=avatars.get(myId);if(self){self.parts.setLook(selectedLook);self.appearance={...selectedLook}}
+  send({type:'appearance',avatar:selectedLook});
+  toast('새로운 캐릭터 모습이 적용되었습니다.');
+ }else{
+  draftLook={...selectedLook};previewParts?.setLook(draftLook);
+ }
+ $('customizeOverlay').classList.add('hidden');
+ $('entryCustomizerMount').append(customizerNode);
+ $('customizeEntryNote').hidden=false;
+ updateCustomizeButtons();resetStick();
+}
+$('customizeApply').addEventListener('click',()=>closeCustomizer(true));
+$('customizeCancel').addEventListener('click',()=>closeCustomizer(false));
+$('customizeOverlay').addEventListener('click',e=>{if(e.target===$('customizeOverlay'))closeCustomizer(false)});
 function setOnline(num){$('online').textContent=num}
 function setConnection(ok){$('connection').classList.toggle('connected',ok);$('connection').lastChild.textContent=ok?'실시간 연결':'연결 끊김'}
 let toastTimer=null;function toast(s){$('toast').textContent=s;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),3300)}
@@ -265,10 +456,10 @@ function chatMessage(name,message,system=false){
 const address=()=>`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws`;
 function connect(){
  ws=new WebSocket(address());
- ws.addEventListener('open',()=>{setConnection(true);send({type:'name',name:$('nickname').value});});
+ ws.addEventListener('open',()=>{setConnection(true);send({type:'name',name:$('nickname').value,avatar:selectedLook});});
  ws.addEventListener('message',ev=>{
   let msg;try{msg=JSON.parse(ev.data)}catch{return}
-  if(msg.type==='welcome'){myId=msg.id;for(const a of [...avatars.keys()])removeAvatar(a);for(const p of msg.players){makeAvatar(p,p.id===myId);if(p.id===myId){local.x=p.x;local.z=p.z;local.rot=p.rot}}setOnline(msg.players.length);toast('실시간 전시관에 연결되었습니다.');}
+  if(msg.type==='welcome'){myId=msg.id;for(const a of [...avatars.keys()])removeAvatar(a);for(const p of msg.players){makeAvatar(p.id===myId?{...p,avatar:selectedLook}:p,p.id===myId);if(p.id===myId){local.x=p.x;local.z=p.z;local.rot=p.rot}}setOnline(msg.players.length);toast('실시간 전시관에 연결되었습니다.');}
   if(msg.type==='joined'){makeAvatar(msg.player);setOnline(avatars.size);chatMessage('시스템',`${msg.player.name}님이 입장했습니다.`,true)}
   if(msg.type==='updated'){refreshAvatar(msg.player)}
   if(msg.type==='moved'){const a=avatars.get(msg.id);if(a){if(msg.id!==myId && Math.hypot(a.target.x-msg.x,a.target.z-msg.z)>.008)a.motionUntil=elapsed+.22;a.target.set(msg.x,0,msg.z);a.rotation=msg.rot} if(msg.id===myId && (!isFree(local.x,local.z) || Math.hypot(local.x-msg.x,local.z-msg.z)>1.4)){local.x=msg.x;local.z=msg.z}}
@@ -286,33 +477,116 @@ function send(data){if(ws?.readyState===WebSocket.OPEN)ws.send(JSON.stringify(da
 
 // Modal and exhibit interaction.
 let activeExhibit=null;let nearest=null;
-function openExhibit(id){const data=EXHIBITS[id];if(!data)return;activeExhibit=id;$('infoCategory').textContent=data.category;$('infoTitle').textContent=data.title;$('infoDescription').textContent=data.description;$('infoFormula').textContent=data.formula;$('infoFact').textContent=data.fact;$('exhibitOverlay').classList.remove('hidden')}
-function finishExhibit(){if(activeExhibit){visited.add(activeExhibit);send({type:'visit',exhibit:activeExhibit});$('progressLabel').textContent=`${visited.size} / 3`;$('progressBar').style.width=`${visited.size/3*100}%`;toast(visited.size===3?'축하합니다! 모든 과학 전시를 관람했습니다.':'관람 완료! 다음 전시로 이동해 보세요.')}closeExhibit()}
+function openExhibit(id){
+ if(id===SPRING_EXHIBIT_ID){
+  activeExhibit=null;
+  $('infoCategory').textContent='MECHANICS LAB · 용수철 단진동';
+  $('infoTitle').textContent='용수철 단진동 실험 장치';
+  $('infoDescription').textContent='수직 지지대에 고정한 용수철 끝에 추를 매단 장치입니다. 현재 전시된 모습은 정지한 평형 상태이며, 추를 당겼다가 놓으면 평형점을 중심으로 진동합니다. 실제 운동 분석은 연결할 시뮬레이터에서 탐구할 수 있습니다.';
+  $('infoFormula').textContent='평형점 부근: F = −kx  ·  T = 2π√(m/k)';
+  $('infoFact').textContent='실험실에서는 질량, 용수철 상수, 진폭을 조절하고 그래프와 미션을 탐구할 수 있습니다. ‘과학관으로 돌아가기’를 누르면 이 자리로 돌아옵니다.';
+  $('finishExhibit').textContent='단진동 실험 시작 →';
+  $('finishExhibit').disabled=!SPRING_SIMULATOR_URL;
+  $('exhibitOverlay').classList.remove('hidden');return;
+ }
+ const data=EXHIBITS[id];if(!data)return;
+ $('finishExhibit').textContent='관 탐험 완료 ✓';$('finishExhibit').disabled=false;activeExhibit=id;$('infoCategory').textContent=data.category;$('infoTitle').textContent=data.title;$('infoDescription').textContent=data.description;$('infoFormula').textContent=data.formula;$('infoFact').textContent=data.fact;$('exhibitOverlay').classList.remove('hidden')}
+function finishExhibit(){if(nearest===SPRING_EXHIBIT_ID && !activeExhibit){closeExhibit();openSpringLab();return;}if(activeExhibit){visited.add(activeExhibit);send({type:'visit',exhibit:activeExhibit});$('progressLabel').textContent=`${visited.size} / 3`;$('progressBar').style.width=`${visited.size/3*100}%`;toast(visited.size===3?'축하합니다! 모든 과학 전시를 관람했습니다.':'관람 완료! 다음 전시로 이동해 보세요.')}closeExhibit()}
 function closeExhibit(){$('exhibitOverlay').classList.add('hidden');activeExhibit=null}
+// Same-page embedded lab: the canvas, avatar and WebSocket stay mounted.
+const springLabOverlay=$('springLabOverlay');
+const springLabFrame=$('springLabFrame');
+function openSpringLab(){
+  resetStick();keys.clear();drag=false;
+  closeMuseumMenu();closeMobileChat();
+  springLabOverlay.classList.remove('hidden');
+  document.body.classList.add('spring-lab-open');
+  if(!springLabFrame.getAttribute('src'))springLabFrame.setAttribute('src',SPRING_SIMULATOR_URL);
+  $('closeSpringLab').focus();
+}
+function closeSpringLab(){
+  if(springLabOverlay.classList.contains('hidden'))return;
+  springLabOverlay.classList.add('hidden');
+  document.body.classList.remove('spring-lab-open');
+  // Reset the simulator only on exit; no hidden animation/physics keeps running.
+  springLabFrame.removeAttribute('src');
+  resetStick();keys.clear();
+  $('touchInteract').focus({preventScroll:true});
+  toast('과학관으로 돌아왔습니다. 용수철 장치 앞에서 탐험을 계속하세요!');
+}
+$('closeSpringLab').addEventListener('click',closeSpringLab);
+window.addEventListener('message',event=>{
+  if(event.origin!==window.location.origin || event.source!==springLabFrame.contentWindow)return;
+  if(event.data?.type==='jetty:return-from-spring-lab')closeSpringLab();
+});
 $('closeExhibit').addEventListener('click',closeExhibit);$('finishExhibit').addEventListener('click',finishExhibit);
 $('helpBtn').addEventListener('click',()=>$('helpOverlay').classList.remove('hidden'));
-$('closeHelp').addEventListener('click',()=>$('helpOverlay').classList.add('hidden'));
-$('enterBtn').addEventListener('click',()=>{if(joined)return;joined=true;$('welcomeOverlay').classList.add('hidden');connect();toast('W A S D로 이동하고 실험관에 가까이 가서 E를 눌러보세요.');});
+$('closeHelp').addEventListener('click',()=>$('helpOverlay').classList.add('hidden'));$('drawerHelp').addEventListener('click',()=>{closeMuseumMenu();$('helpOverlay').classList.remove('hidden')});
+$('enterBtn').addEventListener('click',()=>{if(joined || assetLoading || !avatarAssets)return;selectedLook=cleanLook(draftLook);joined=true;document.body.classList.add('in-world');$('welcomeOverlay').classList.add('hidden');connect();toast(document.documentElement.dataset.device==='desktop'?'WASD 또는 왼쪽 조이스틱으로 이동하고, 마우스로 시점을 돌려보세요.':'왼쪽 스틱으로 이동하고 화면을 드래그해 시점을 돌려보세요.');});
 $('nickname').addEventListener('keydown',ev=>{if(ev.key==='Enter')$('enterBtn').click()});
 $('chatForm').addEventListener('submit',ev=>{ev.preventDefault();const msg=$('chatInput').value.trim();if(msg){send({type:'chat',message:msg});$('chatInput').value=''}});
-$('chatToggle').addEventListener('click',()=>{$('chatPanel').classList.toggle('collapsed');$('chatToggle').textContent=$('chatPanel').classList.contains('collapsed')?'+':'−'});
-for(const el of document.querySelectorAll('.exhibit-link'))el.addEventListener('click',()=>{if(!joined){toast('전시관에 먼저 입장해 주세요.');return}const id=el.dataset.exhibit;const p=EXHIBITS[id].pos;send({type:'teleport',hall:id});toast(`${EXHIBITS[id].name}으로 이동합니다.`);});
-const canMove=()=>joined&&$('exhibitOverlay').classList.contains('hidden')&&$('helpOverlay').classList.contains('hidden')&&document.activeElement!==$('chatInput')&&document.activeElement!==$('nickname');
-window.addEventListener('keydown',e=>{if(['KeyW','KeyA','KeyS','KeyD','KeyF','ShiftLeft','ShiftRight','KeyE','Escape','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&document.activeElement!==$('chatInput'))e.preventDefault();keys.add(e.code);if(e.code==='KeyE'&&canMove()&&nearest)openExhibit(nearest);if(e.code==='KeyF'&&canMove()&&myId)playWave(myId,true);if(e.code==='Escape'){closeExhibit();$('helpOverlay').classList.add('hidden')}});
+function closeMobileChat(){document.body.classList.remove('chat-open');$('mobileChatToggle').setAttribute('aria-expanded','false')}
+function closeMuseumMenu(){document.body.classList.remove('menu-open');$('menuToggle').setAttribute('aria-expanded','false');resetStick()}
+function isDesktopMode(){return document.documentElement.dataset.device==='desktop'}
+function setDesktopPanelHidden(hidden){
+ document.body.classList.toggle('panel-hidden',hidden);
+ $('menuToggle').setAttribute('aria-expanded',String(!hidden));
+}
+const toggleJoystick=$('joystickToggle');
+function setJoystickHidden(hidden){
+ document.body.classList.toggle('joystick-hidden',hidden);
+ toggleJoystick.setAttribute('aria-expanded',String(!hidden));
+ toggleJoystick.querySelector('span').textContent=hidden?'조이스틱 보기':'조이스틱 숨기기';
+ if(hidden)resetStick();
+}
+toggleJoystick.addEventListener('click',()=>setJoystickHidden(!document.body.classList.contains('joystick-hidden')));
+
+$('menuToggle').addEventListener('click',()=>{if(isDesktopMode()){setDesktopPanelHidden(!document.body.classList.contains('panel-hidden'));return}closeMobileChat();const open=document.body.classList.toggle('menu-open');$('menuToggle').setAttribute('aria-expanded',String(open));if(open)resetStick()});
+$('menuClose').addEventListener('click',()=>{if(isDesktopMode())setDesktopPanelHidden(true);else closeMuseumMenu()});
+$('uiBackdrop').addEventListener('click',()=>{closeMuseumMenu();closeMobileChat()});
+$('mobileChatToggle').addEventListener('click',()=>{closeMuseumMenu();const open=document.body.classList.toggle('chat-open');$('mobileChatToggle').setAttribute('aria-expanded',String(open));if(open){resetStick();$('chatPanel').classList.remove('collapsed');$('chatToggle').textContent='−'}});
+$('chatToggle').addEventListener('click',()=>{if(!isDesktopMode()){closeMobileChat()}else{$('chatPanel').classList.toggle('collapsed');$('chatToggle').textContent=$('chatPanel').classList.contains('collapsed')?'+':'−'}});
+$('chatInput').addEventListener('focus',()=>resetStick());
+for(const el of document.querySelectorAll('.exhibit-link'))el.addEventListener('click',()=>{if(!joined){toast('전시관에 먼저 입장해 주세요.');return}const id=el.dataset.exhibit;const p=EXHIBITS[id].pos;send({type:'teleport',hall:id});closeMuseumMenu();toast(`${EXHIBITS[id].name}으로 이동합니다.`);});
+const canMove=()=>joined&&springLabOverlay.classList.contains('hidden')&&$('customizeOverlay').classList.contains('hidden')&&$('exhibitOverlay').classList.contains('hidden')&&$('helpOverlay').classList.contains('hidden')&&document.activeElement!==$('chatInput')&&document.activeElement!==$('nickname')&&!document.body.classList.contains('menu-open')&&!document.body.classList.contains('chat-open');
+window.addEventListener('keydown',e=>{if(!springLabOverlay.classList.contains('hidden')){if(e.code==='Escape'){e.preventDefault();closeSpringLab()}return;}if(['KeyW','KeyA','KeyS','KeyD','KeyF','ShiftLeft','ShiftRight','KeyE','Escape','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&document.activeElement!==$('chatInput'))e.preventDefault();keys.add(e.code);if(e.code==='KeyE'&&canMove()&&nearest)openExhibit(nearest);if(e.code==='KeyF'&&canMove()&&myId)playWave(myId,true);if(e.code==='Escape'){if(!$('customizeOverlay').classList.contains('hidden'))closeCustomizer(false);closeExhibit();$('helpOverlay').classList.add('hidden');closeMuseumMenu();closeMobileChat()}});
 window.addEventListener('keyup',e=>keys.delete(e.code));const keys=new Set();
 $('touchInteract').addEventListener('click',()=>{if(nearest&&canMove())openExhibit(nearest)});
 $('touchWave').addEventListener('click',()=>{if(canMove()&&myId)playWave(myId,true)});
+let touchRunning=false;
+$('touchRun').addEventListener('click',()=>{touchRunning=!touchRunning;$('touchRun').classList.toggle('active',touchRunning);$('touchRun').setAttribute('aria-pressed',String(touchRunning))});
 let yaw=0.17,pitch=.28,drag=false,lastX=0,lastY=0;
-renderer.domElement.addEventListener('pointerdown',e=>{if(!joined)return;drag=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});
+renderer.domElement.addEventListener('pointerdown',e=>{if(!canMove())return;drag=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});
 renderer.domElement.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;yaw-=dx*.006;pitch=THREE.MathUtils.clamp(pitch+dy*.004,.08,.56)});
-renderer.domElement.addEventListener('pointerup',()=>drag=false);
+// The physical spring apparatus can also be clicked or tapped directly.
+// Raycast only the spring meshes; a short distance and canMove() prevent accidental clicks.
+const springClickRay=new THREE.Raycaster();
+const springClickPoint=new THREE.Vector2();
+let worldPointerStart=null;
+renderer.domElement.addEventListener('pointerdown',event=>{
+ worldPointerStart={x:event.clientX,y:event.clientY};
+});
+renderer.domElement.addEventListener('pointerup',event=>{
+ if(!canMove()||!worldPointerStart)return;
+ const distance=Math.hypot(event.clientX-worldPointerStart.x,event.clientY-worldPointerStart.y);
+ worldPointerStart=null;
+ if(distance>12 || Math.hypot(local.x-springX,local.z-springZ)>3.2)return;
+ const rect=renderer.domElement.getBoundingClientRect();
+ springClickPoint.set((event.clientX-rect.left)/rect.width*2-1,-((event.clientY-rect.top)/rect.height*2-1));
+ springClickRay.setFromCamera(springClickPoint,camera);
+ if(springClickRay.intersectObjects([standBase,springCoil,springMass],false).length){
+  nearest=SPRING_EXHIBIT_ID;
+  openExhibit(SPRING_EXHIBIT_ID);
+ }
+});
+renderer.domElement.addEventListener('pointerup',()=>drag=false);renderer.domElement.addEventListener('pointercancel',()=>drag=false);renderer.domElement.addEventListener('lostpointercapture',()=>drag=false);
 let joystick={x:0,y:0},joystickPointer=null;
 const joy=$('joystick');
-function updateStick(e){const b=joy.getBoundingClientRect();const x=(e.clientX-(b.left+b.width/2))/(b.width*.36),y=(e.clientY-(b.top+b.height/2))/(b.height*.36);const len=Math.max(1,Math.hypot(x,y));joystick.x=x/len;joystick.y=y/len;$('stick').style.transform=`translate(${joystick.x*25}px,${joystick.y*25}px)`}
-joy.addEventListener('pointerdown',e=>{joystickPointer=e.pointerId;joy.setPointerCapture(e.pointerId);updateStick(e)});
-joy.addEventListener('pointermove',e=>{if(e.pointerId===joystickPointer)updateStick(e)});
+function updateStick(e){if(!canMove())return;const b=joy.getBoundingClientRect();const x=(e.clientX-(b.left+b.width/2))/(b.width*.36),y=(e.clientY-(b.top+b.height/2))/(b.height*.36);const len=Math.max(1,Math.hypot(x,y));joystick.x=x/len;joystick.y=y/len;$('stick').style.transform=`translate(${joystick.x*25}px,${joystick.y*25}px)`}
+joy.addEventListener('pointerdown',e=>{if(!canMove())return;e.preventDefault();joystickPointer=e.pointerId;joy.setPointerCapture(e.pointerId);updateStick(e)});
+joy.addEventListener('pointermove',e=>{if(e.pointerId===joystickPointer){e.preventDefault();updateStick(e)}});
 function resetStick(){joystickPointer=null;joystick={x:0,y:0};$('stick').style.transform='translate(0,0)'}
-joy.addEventListener('pointerup',resetStick);joy.addEventListener('pointercancel',resetStick);
+joy.addEventListener('pointerup',resetStick);joy.addEventListener('pointercancel',resetStick);joy.addEventListener('lostpointercapture',resetStick);window.addEventListener('blur',()=>{resetStick();keys.clear();drag=false});
 const clock=new THREE.Clock();let elapsed=0,lastPacket=0;
 const targetCamera=new THREE.Vector3();
 const viewRay=new THREE.Raycaster();
@@ -335,7 +609,7 @@ function animate(){
   const rawY=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-joystick.y;
   if(Math.hypot(rawX,rawY)>.08){
    const r=Math.hypot(rawX,rawY),rx=rawX/r,ry=rawY/r;
-   const speed=(keys.has('ShiftLeft')||keys.has('ShiftRight')?8:4.5)*dt;
+   const speed=(keys.has('ShiftLeft')||keys.has('ShiftRight')||touchRunning?8:4.5)*dt;
    const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
    const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
    const direction=right.multiplyScalar(rx).add(forward.multiplyScalar(ry));
@@ -363,7 +637,7 @@ function animate(){
  }
  const focus=new THREE.Vector3(local.x,1.5,local.z);
  // Keep the third-person viewpoint below the skylight where possible.
- const distance=isTouch?5.7:6.2;
+ const distance=isTouch?(document.documentElement.dataset.device==='phone'?5.0:5.7):6.2;
  targetCamera.set(focus.x+Math.sin(yaw)*Math.cos(pitch)*distance,focus.y+Math.sin(pitch)*distance+0.35,focus.z+Math.cos(yaw)*Math.cos(pitch)*distance);
  const safeDistance=cameraSafeDistance(focus,targetCamera,targetCamera.distanceTo(focus));
  // Zoom in quickly near an obstruction and ease out when the view clears.
@@ -375,10 +649,11 @@ function animate(){
  camera.lookAt(focus);
  nearest=null;let minDistance=6.5;
  for(const [id,e] of Object.entries(EXHIBITS)){const d=Math.hypot(local.x-e.pos.x,local.z-e.pos.z);if(d<minDistance){minDistance=d;nearest=id}}
- $('interact').classList.toggle('visible',Boolean(nearest&&joined&&canMove()));
- if(nearest)$('interactText').textContent=`${EXHIBITS[nearest].name} 관람하기`;
- for(const el of document.querySelectorAll('.exhibit-link'))el.classList.toggle('active',nearest===el.dataset.exhibit);
+ $('interact').classList.toggle('visible',Boolean(nearest&&joined&&canMove()));$('touchInteract').classList.toggle('available',Boolean(nearest&&joined));
+ if(Math.hypot(local.x-springX,local.z-springZ)<2.7)nearest=SPRING_EXHIBIT_ID;
+ if(nearest)$('interactText').textContent=nearest===SPRING_EXHIBIT_ID?'용수철 단진동 장치 살펴보기':`${EXHIBITS[nearest].name} 관람하기`;
+ for(const el of document.querySelectorAll('.exhibit-link'))el.classList.toggle('active',(nearest===SPRING_EXHIBIT_ID?'mechanics':nearest)===el.dataset.exhibit);
  renderer.render(scene,camera);
 }
 animate();
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2))});
+addEventListener('resize',()=>{updateDeviceMode();closeMuseumMenu();closeMobileChat();resetStick();camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,isTouch?1.5:2))});

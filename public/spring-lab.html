@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f5f8fc">
+<title>JETTY SPACE | 용수철 단진동 실험실 3.1</title>
+<style>
+:root{font-family:system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#18283f;background:#f4f7fb;font-synthesis:none}*{box-sizing:border-box}body{margin:0}button,input{font:inherit}button{cursor:pointer;touch-action:manipulation}button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #5a91ff;outline-offset:3px}.wrap{max-width:1150px;margin:auto;padding:14px 14px 50px}.top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 16px}.brand{font-size:clamp(19px,4vw,27px);font-weight:850;letter-spacing:-.7px}.sub{font-size:12px;font-weight:650;color:#4473aa}.pill{border:1px solid #d7e3f2;color:#40668f;background:white;border-radius:999px;padding:7px 11px;font-size:12px;white-space:nowrap}.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(310px,.85fr);gap:14px}.stack{display:grid;align-content:start;gap:14px}.panel{background:#fff;border:1px solid #e5edf6;border-radius:20px;box-shadow:0 4px 20px #1632590a;overflow:hidden}.padh{padding:17px 18px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}.padh h2{margin:0;font-size:17px;letter-spacing:-.4px}.padh .hint{font-size:12px;color:#64758d}.stage{position:relative;margin:0 12px 12px;border:1px solid #e0eaf3;border-radius:15px;overflow:hidden;background:linear-gradient(180deg,#fafdff,#f1f7ff);touch-action:none}.stage canvas{display:block;width:100%;height:auto;aspect-ratio:1.13/1;touch-action:none}.stage .tip{pointer-events:none;position:absolute;bottom:10px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:12px;background:#ffffffdf;color:#5a6c82;border:1px solid #e5edf6;padding:6px 12px;border-radius:99px}.status{position:absolute;top:10px;right:10px;background:#e8f2ff;color:#2055a0;border-radius:99px;padding:6px 11px;font-size:11px;font-weight:750}.status.run{background:#e5f8ee;color:#167045}.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 12px 12px}.btn{border:0;border-radius:12px;padding:13px 6px;min-height:48px;font-weight:750;font-size:13px;background:#eaf0f8;color:#26466b}.btn.primary{background:#2569e8;color:#fff}.btn.ghost{background:#f1f4f8;color:#4e607a}.btn:disabled{opacity:.5;cursor:not-allowed}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:0 12px 14px}.metric{background:#f6f9fd;border:1px solid #ebf0f7;border-radius:11px;padding:8px 5px;text-align:center;min-width:0}.metric span{display:block;font-size:10px;color:#66788d;margin-bottom:4px}.metric strong{display:block;font-size:13px;letter-spacing:-.2px;font-variant-numeric:tabular-nums}.control{padding:0 18px 15px}.row-label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0 6px;font-size:14px}.row-label strong{font-size:14px}.number{font-weight:800;color:#2362ca;font-variant-numeric:tabular-nums}.control input[type=range]{width:100%;height:28px;accent-color:#2b70ed;cursor:pointer}.ticks{display:flex;justify-content:space-between;font-size:11px;color:#8795a8}.toggle{display:flex;justify-content:space-between;align-items:center;padding:4px 18px 18px;gap:10px;font-size:14px}.toggle input{width:23px;height:23px;accent-color:#2b70ed}.notice{font-size:12px;line-height:1.55;color:#5e738e;background:#f3f7ff;border-radius:12px;margin:0 14px 14px;padding:11px 12px}.graph-tabs{display:flex;gap:7px;padding:0 14px 10px}.tab{flex:1;border:1px solid #d9e6f8;background:#f6f9ff;border-radius:10px;min-height:40px;font-size:13px;color:#58718d;font-weight:750}.tab.active{background:#e8f0ff;color:#1e60ca;border-color:#91b9f7}.graph-wrap{margin:0 12px 13px;border:1px solid #e4ebf4;border-radius:13px;overflow:hidden}.graph-wrap canvas{display:block;width:100%;height:auto;aspect-ratio:1.65/1;background:#fff}.explain{font-size:12px;color:#61748a;padding:0 16px 14px;line-height:1.65}.details{padding:0 15px 14px}.details summary{cursor:pointer;list-style:none;padding:13px 3px;font-size:15px;font-weight:800}.details summary::-webkit-details-marker{display:none}.details summary:after{content:'⌄';float:right;color:#64748b}.details[open] summary:after{content:'⌃'}.mission{border-top:1px solid #edf0f5;padding:13px 2px}.mission:first-of-type{border-top:0}.mission b{font-size:14px}.mission p{margin:7px 0;color:#65768c;font-size:13px;line-height:1.6}.mission button{background:#edf4ff;color:#1c5cc1;border:1px solid #cbdcf7;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:750}.answer{margin:8px 0 2px;border-left:3px solid #2b70ed;padding:6px 11px;background:#f5f9ff;font-size:13px;line-height:1.65}.record{padding:0 14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:9px}.record button{grid-column:span 2}.record label{font-size:12px;color:#65758d}.record input{display:block;width:100%;border:1px solid #dce5f1;border-radius:10px;padding:11px;margin-top:5px;font-size:14px}.records{padding:0 14px 16px;overflow:auto}.records table{border-collapse:collapse;width:100%;font-size:12px}.records th,.records td{border-bottom:1px solid #e8edf4;padding:9px 4px;text-align:center}.records th{color:#58718d;background:#f7faff}.foot{text-align:center;font-size:12px;color:#7a8aa0;margin-top:16px;line-height:1.6}.onlymobile{display:none}
+/* 미션 확장 */
+.mbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 2px 8px;flex-wrap:wrap}.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{border:1px solid #d9e6f8;background:#f6f9ff;color:#58718d;border-radius:99px;padding:6px 11px;font-size:12px;font-weight:750}.chip.active{background:#2569e8;border-color:#2569e8;color:#fff}.progress{font-size:12px;color:#4b6385;font-weight:750}.progress i{display:block;height:5px;background:#e9eff7;border-radius:9px;margin-top:4px;width:110px;overflow:hidden}.progress i b{display:block;height:100%;width:0;background:#2fae7a;transition:width .3s}.mhead{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.lv{font-size:10.5px;font-weight:800;border-radius:6px;padding:3px 7px}.lv.basic{background:#e5f4ec;color:#1d7a50}.lv.inq{background:#fff2e2;color:#b5660f}.lv.chal{background:#f3eaff;color:#7442b8}.mbtns{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.mission button.setup{background:#fff;color:#2c5a94;border-color:#d6e2f1}.mission .done{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:12px;color:#5e738e;cursor:pointer}.mission .done input{width:18px;height:18px;accent-color:#2fae7a}.mission.complete{opacity:.62}.mission.complete b{text-decoration:line-through;text-decoration-color:#2fae7a}.ask{display:flex;gap:6px;align-items:center;margin:4px 0 8px;flex-wrap:wrap}.ask input{width:110px;border:1px solid #dce5f1;border-radius:9px;padding:8px 9px;font-size:13px}.ask span{font-size:12px;color:#65768c}.fb{font-size:12.5px;margin:6px 0 2px;line-height:1.55}.fb.ok{color:#167045}.fb.no{color:#b54a2a}.fb.info{color:#2c5a94}.mission[hidden]{display:none}
+@media(max-width:790px){.layout{grid-template-columns:1fr}.wrap{padding:8px 10px 35px}.top{margin:8px 4px 13px}.stack{gap:12px}.stage canvas{aspect-ratio:1.18/1}.panel{border-radius:16px}.onlymobile{display:inline}.metrics{grid-template-columns:repeat(4,1fr)}.graph-wrap canvas{aspect-ratio:1.6/1}}@media(max-width:390px){.brand{font-size:19px}.pill{font-size:11px}.metric strong{font-size:11px}.metric span{font-size:9px}.actions{gap:6px}.btn{font-size:12px;padding:10px 4px}}
+/* JETTY SPACE round-trip navigation. */
+.jetty-return{display:inline-flex;align-items:center;justify-content:center;min-height:43px;padding:10px 14px;border-radius:12px;border:1px solid #9bcfc7;background:#e6fbf4;color:#166557;font-size:13px;font-weight:850;text-decoration:none;white-space:nowrap}
+.jetty-top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:490px){.top{align-items:flex-start;flex-wrap:wrap}.jetty-top-actions{width:100%;justify-content:space-between}.jetty-return{flex:1}.top .pill{min-height:43px}}
+</style>
+</head>
+<body><div class="wrap">
+<header class="top"><div><div class="sub">INTERACTIVE PHYSICS LAB · 03</div><div class="brand">용수철 단진동 실험실</div></div><div class="jetty-top-actions"><button id="returnJetty" class="jetty-return" type="button">← JETTY SPACE로 돌아가기</button><button id="fullscreen" class="pill" type="button">⛶ 전체화면</button></div></header>
+<div class="layout">
+<div class="stack">
+<section class="panel" id="stagePanel"><div class="padh"><h2>① 직접 당기고 놓기</h2><span class="hint">아래쪽이 + 방향</span></div>
+<div class="stage" id="stage"><canvas id="spring" width="680" height="590" aria-label="용수철에 매달린 물체를 손으로 끌어서 단진동시키는 화면"></canvas><div id="status" class="status">준비</div><div class="tip">👆 파란 추를 손가락으로 당겼다가 놓으세요</div></div>
+<div class="actions"><button id="pull" class="btn primary">↓ A만큼 당기기</button><button id="play" class="btn">▶ 놓기</button><button id="reset" class="btn ghost">↺ 초기화</button></div>
+<div class="metrics"><div class="metric"><span>변위 x</span><strong id="xVal">0.000 m</strong></div><div class="metric"><span>속도 v</span><strong id="vVal">0.00 m/s</strong></div><div class="metric"><span>가속도 a</span><strong id="aVal">0.00 m/s²</strong></div><div class="metric"><span>주기 T</span><strong id="tVal">0.00 s</strong></div></div></section>
+<section class="panel"><div class="padh"><h2>② 물리량 설정</h2><span class="hint">수치를 바꿔 비교해 보세요</span></div>
+<div class="control"><div class="row-label"><strong>질량 m</strong><span class="number" id="massOut">1.0 kg</span></div><input aria-label="질량 m" type="range" id="mass" min="0.5" max="4" step="0.1" value="1"><div class="ticks"><span>0.5 kg</span><span>4.0 kg</span></div></div>
+<div class="control"><div class="row-label"><strong>용수철 상수 k</strong><span class="number" id="kOut">20 N/m</span></div><input aria-label="용수철 상수 k" type="range" id="k" min="10" max="80" step="1" value="20"><div class="ticks"><span>10 N/m</span><span>80 N/m</span></div></div>
+<div class="control"><div class="row-label"><strong>진폭 A</strong><span class="number" id="ampOut">0.12 m</span></div><input aria-label="진폭 A" type="range" id="amp" min="0.02" max="0.3" step="0.01" value="0.12"><div class="ticks"><span>0.02 m</span><span>0.30 m</span></div></div>
+<div class="toggle"><label for="damped">감쇠진동 사용 <small style="color:#8492a4">(선택)</small></label><input type="checkbox" id="damped"></div><div class="notice" id="modeNote">이상적인 단진동: 마찰이 없어 진폭이 일정합니다. 설정을 바꾸면 운동을 멈추고 새 조건으로 시작합니다.</div></section>
+</div>
+<div class="stack">
+<section class="panel" id="graphs"><div class="padh"><h2>③ 실시간 그래프</h2><span class="hint">그래프는 자동으로 기록돼요</span></div><div class="graph-tabs"><button id="displacementTab" class="tab active">변위–시간</button><button id="energyTab" class="tab">에너지–시간</button></div><div class="graph-wrap"><canvas id="plot" width="680" height="415" aria-label="시간에 따른 변위 또는 에너지 그래프"></canvas></div><div class="explain" id="graphNote"></div></section>
+<section class="panel"><details class="details" id="missions" open><summary>④ 학생 실험 미션</summary>
+<div class="mbar"><div class="chips" id="chips"><button class="chip active" data-lv="all">전체</button><button class="chip" data-lv="기본">기본</button><button class="chip" data-lv="탐구">탐구</button><button class="chip" data-lv="도전">도전</button></div><div class="progress"><span id="progText">완료 0 / 0</span><i><b id="progBar"></b></i></div></div>
+<div id="missionList"></div>
+</details></section>
+<section class="panel"><div class="padh"><h2>⑤ 측정 결과 기록</h2><span class="hint">비교표로 정리하기</span></div><div class="record"><label>조 이름 / 번호<input id="student" type="text" maxlength="30" placeholder="예: 2조 / 10507"></label><label>관찰 메모<input id="memo" type="text" maxlength="80" placeholder="예: 질량 2배"></label><button id="saveRecord" class="btn primary">+ 현재 조건 기록하기</button><button id="downloadCsv" class="btn">CSV 내려받기</button></div><div class="records"><table><thead><tr><th>기록</th><th>m(kg)</th><th>k(N/m)</th><th>A(m)</th><th>T(s)</th></tr></thead><tbody id="recordsBody"><tr><td colspan="5" style="color:#8a97a8">아직 기록이 없습니다.</td></tr></tbody></table></div></section>
+</div></div>
+<div class="foot">이상적 후크 법칙 용수철 · 평형 위치 기준 좌표 · 브라우저에서 직접 실행 · 별도 앱 설치 불필요<br>감쇠 모드는 학습용 점성 저항 모형이며, 기록은 현재 페이지 안에서만 유지됩니다.</div>
+</div>
+<script>
+(()=>{'use strict';
+document.getElementById('returnJetty').addEventListener('click',()=>{
+  // The parent listens only for a message from the same origin and the known iframe.
+  if(window.parent!==window){
+    window.parent.postMessage({type:'jetty:return-from-spring-lab'},window.location.origin);
+  } else {
+    // Directly opened lab: go back to the main museum on this same server.
+    window.location.assign('/');
+  }
+ });
+ const $=id=>document.getElementById(id), C=$('spring'),ctx=C.getContext('2d'),P=$('plot'),pctx=P.getContext('2d');
+const settings={m:1,k:20,A:.12,damp:false};let state='ready',x=0,v=0,elapsed=0,startX=0,startV=0,lastStamp=null,dragId=null,chart='x',samples=[],records=[];
+// tOffset: 그래프 시간 기준 이동량. 물체가 평형 위치를 + 방향으로 지나는 순간을 t = 0으로 잡아 x = A sin(ωt)가 되도록 함
+let tOffset=0,refR=0;
+const GAMMA=.28;
+const g=9.8, W=C.width,H=C.height, anchorX=305,supportY=60,pxPerM=330;
+const omega=()=>Math.sqrt(settings.k/settings.m),period=()=>2*Math.PI/omega();
+const wDamped=()=>{const w=omega();return Math.sqrt(w*w-GAMMA*GAMMA);};
+const graphTime=()=>(state==='running'||state==='paused')?elapsed+tOffset:0;
+function eqY(){return 270;}
+function centerY(){return eqY()+x*pxPerM;}
+function setState(s){state=s;$('status').textContent=({ready:'준비',held:'당기는 중',running:'진동 중',paused:'일시정지'})[s];$('status').classList.toggle('run',s==='running');$('play').textContent=s==='running'?'Ⅱ 일시정지':s==='paused'?'▶ 계속하기':'▶ 놓기';}
+function newTrial(){x=0;v=0;elapsed=0;startX=0;startV=0;tOffset=0;refR=0;lastStamp=null;samples=[];setState('ready');sample(true);draw();}
+function prepared(val){x=Math.min(.32,Math.max(-.32,val));v=0;startX=x;startV=0;elapsed=0;tOffset=0;refR=0;lastStamp=null;samples=[];sample(true);setState('held');draw();}
+// 초기 조건 (x0, v0)를 x = R·sin(ω(t+tOffset)) 꼴로 바꾸기 위한 위상 계산
+function computePhase(){const wd=settings.damp?wDamped():omega();let s;if(settings.damp){s=(startV+GAMMA*startX)/wd;}else{s=startV/wd;}const R=Math.hypot(startX,s);if(R<1e-6){tOffset=0;refR=0;return;}let phi=Math.atan2(startX,s);if(phi<0)phi+=2*Math.PI;tOffset=phi/wd;refR=R;}
+function release(){if(state==='paused'){setState('running');lastStamp=null;return;}if(state==='running'){setState('paused');return;}if(state==='ready'){prepared(settings.A);}startX=x;startV=0;elapsed=0;lastStamp=null;computePhase();samples=[];setState('running');sample(true);}
+function solve(t){const w=omega();if(!settings.damp){return {x:startX*Math.cos(w*t)+startV*Math.sin(w*t)/w,v:-startX*w*Math.sin(w*t)+startV*Math.cos(w*t)};}
+const gamma=GAMMA;const wd=Math.sqrt(w*w-gamma*gamma);const q=(startV+gamma*startX)/wd;const cs=Math.cos(wd*t),sn=Math.sin(wd*t),e=Math.exp(-gamma*t);return {x:e*(startX*cs+q*sn),v:e*((-gamma*startX+wd*q)*cs+(-gamma*q-wd*startX)*sn)};}
+function energy(){const K=.5*settings.m*v*v,U=.5*settings.k*x*x;return {K,U,E:K+U};}
+function sample(force){const t=graphTime();if(force||samples.length===0||t-samples[samples.length-1].t>=.024){samples.push({t,x,v,...energy()});if(samples.length>1700)samples.shift();}}
+function pointerPos(ev){const r=C.getBoundingClientRect();return {x:(ev.clientX-r.left)*W/r.width,y:(ev.clientY-r.top)*H/r.height};}
+C.addEventListener('pointerdown',ev=>{let p=pointerPos(ev);if(Math.abs(p.x-anchorX)>65||Math.abs(p.y-centerY())>63)return;ev.preventDefault();dragId=ev.pointerId;C.setPointerCapture(ev.pointerId);prepared(x);handleMove(ev);});
+function handleMove(ev){if(dragId!==ev.pointerId)return;ev.preventDefault();let p=pointerPos(ev);x=Math.max(-.32,Math.min(.32,(p.y-eqY())/pxPerM));startX=x;v=0;elapsed=0;tOffset=0;samples=[];sample(true);draw();}
+C.addEventListener('pointermove',handleMove);function endDrag(ev){if(dragId!==ev.pointerId)return;dragId=null;if(C.hasPointerCapture(ev.pointerId))C.releasePointerCapture(ev.pointerId);release();}C.addEventListener('pointerup',endDrag);C.addEventListener('pointercancel',endDrag);
+$('pull').onclick=()=>prepared(settings.A);$('play').onclick=release;$('reset').onclick=newTrial;
+function change(){settings.m=+$('mass').value;settings.k=+$('k').value;settings.A=+$('amp').value;settings.damp=$('damped').checked;$('massOut').textContent=settings.m.toFixed(1)+' kg';$('kOut').textContent=settings.k.toFixed(0)+' N/m';$('ampOut').textContent=settings.A.toFixed(2)+' m';$('modeNote').textContent=settings.damp?'감쇠진동: 속도에 비례하는 저항력 때문에 진폭과 역학적 에너지가 점차 감소합니다.':'이상적인 단진동: 마찰이 없어 진폭이 일정합니다. 설정을 바꾸면 운동을 멈추고 새 조건으로 시작합니다.';newTrial();}
+['mass','k','amp','damped'].forEach(id=>$(id).addEventListener('input',change));
+const NOTE_X='평형 위치를 기준으로 아래쪽을 +로 표시합니다. 물체가 평형 위치를 + 방향(아래쪽)으로 지나는 순간을 t = 0으로 잡았기 때문에 그래프는 x = A sin(ωt)가 됩니다. 점선은 이론 곡선 A sin(ωt), 세로 점선은 손을 놓은 순간이에요.';
+const NOTE_E='운동에너지 K = ½mv², 평형 위치 기준 유효 퍼텐셜 에너지 U = ½kx², 역학적 에너지 E = K+U입니다. x = A sin(ωt)이므로 U = ½kA²sin²(ωt), K = ½kA²cos²(ωt)입니다.';
+function setChart(kind){chart=kind;$('displacementTab').classList.toggle('active',kind==='x');$('energyTab').classList.toggle('active',kind==='energy');$('graphNote').textContent=kind==='x'?NOTE_X:NOTE_E;drawGraph();}
+$('displacementTab').onclick=()=>setChart('x');$('energyTab').onclick=()=>setChart('energy');
+$('fullscreen').onclick=()=>{if(!document.fullscreenElement){document.documentElement.requestFullscreen?.().catch(()=>{});}else{document.exitFullscreen?.();}};
+$('saveRecord').onclick=()=>{records.push({student:$('student').value.trim()||'—',memo:$('memo').value.trim(),m:settings.m,k:settings.k,A:settings.A,T:period()});renderRecords();};
+function renderRecords(){const body=$('recordsBody');body.textContent='';records.forEach((r,i)=>{const tr=document.createElement('tr');[i+1,r.m.toFixed(1),r.k,r.A.toFixed(2),r.T.toFixed(2)].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td);});body.append(tr);});}
+$('downloadCsv').onclick=()=>{if(!records.length){alert('먼저 측정 조건을 기록해 주세요.');return;}const q=s=>'"'+String(s).replaceAll('"','""')+'"';const lines=[['조/번호','관찰 메모','질량(kg)','용수철 상수(N/m)','진폭(m)','주기(s)'],...records.map(r=>[r.student,r.memo,r.m,r.k,r.A,r.T.toFixed(4)])];const csv='\ufeff'+lines.map(row=>row.map(q).join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='용수철_단진동_실험기록.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+
+// ===== 학생 실험 미션 =====
+const MISSIONS=[
+{lv:'기본',title:'질량과 주기',desc:'m = 1 kg, k = 20 N/m일 때 주기를 확인하고 질량을 4 kg으로 바꿔 보세요. 주기는 몇 배가 될까요?',setup:{m:1,k:20,A:.12,damp:false,chart:'x'},ans:'2배입니다. 주기 T = 2π√(m/k)이므로 질량이 4배면 주기는 √4 = 2배가 됩니다. (약 1.40 s → 2.81 s)'},
+{lv:'기본',title:'진폭과 주기',desc:'m과 k를 고정하고 진폭 A를 0.10 m에서 0.20 m로 바꿔 보세요. 주기가 달라질까요?',setup:{m:1,k:20,A:.10,damp:false,chart:'x'},ans:'달라지지 않습니다. 이상적인 단진동의 주기는 m과 k로만 결정됩니다. 진폭이 커지면 움직이는 거리도 늘지만 최대 속력도 같은 비율로 커지기 때문입니다.'},
+{lv:'기본',title:'복원력과 가속도 방향',desc:'물체가 평형 위치보다 아래(x > 0)에 있을 때 가속도는 어느 방향일까요? 화면의 보라색 a 화살표로 확인해 보세요.',ans:'위쪽(− 방향)입니다. F = −kx이므로 가속도 a = −(k/m)x는 항상 평형 위치를 향하고, 변위와 반대 방향입니다.'},
+{lv:'탐구',title:'용수철 상수와 주기',desc:'m = 1 kg에서 k를 20 N/m → 80 N/m로 바꾸면 주기는 어떻게 될까요? 먼저 예측하고 확인해 보세요.',setup:{m:1,k:20,A:.12,damp:false,chart:'x'},ans:'1/2배가 됩니다. T ∝ 1/√k이므로 k가 4배면 주기는 1/√4 = 1/2배입니다. 단단한 용수철일수록 빠르게 진동합니다.'},
+{lv:'탐구',title:'sin 그래프 읽기',desc:'변위–시간 그래프 x = A sin(ωt)에서 t = T/4인 순간 변위 x, 속도 v, 가속도 a는 각각 어떻게 될까요? 일시정지로 멈춰서 확인해 보세요.',setup:{damp:false,chart:'x'},ans:'x = +A(가장 아래), v = 0, a = −ω²A(위쪽으로 크기 최대)입니다. 그래프의 기울기가 속도이므로 꼭짓점에서 v = 0입니다. 반대로 t = 0에서는 x = 0, 속력 최대, a = 0입니다.'},
+{lv:'탐구',title:'진폭과 역학적 에너지',desc:'에너지–시간 그래프로 바꾸고 진폭을 0.10 m에서 0.20 m로 바꿔 보세요. 역학적 에너지 E는 몇 배가 될까요?',setup:{m:1,k:20,A:.10,damp:false,chart:'energy'},ans:'4배입니다. 역학적 에너지 E = ½kA²이므로 진폭이 2배면 에너지는 2² = 4배입니다. (0.10 J → 0.40 J)'},
+{lv:'탐구',title:'에너지 전환의 리듬',desc:'에너지–시간 그래프에서 운동에너지 K가 최대가 되는 순간은 한 주기 동안 몇 번일까요? 그때 물체는 어디에 있나요?',setup:{damp:false,chart:'energy'},ans:'2번입니다. 물체가 평형 위치(x = 0)를 지날 때마다 K가 최대, U = 0이 됩니다. 그래서 K와 U는 주기 T/2로 반복되고, E = K + U는 항상 일정합니다.'},
+{lv:'도전',title:'같은 주기 만들기',desc:'m = 1 kg, k = 20 N/m일 때와 같은 주기를 질량 2.0 kg으로 만들려면 k를 얼마로 해야 할까요? 슬라이더로 직접 맞춘 뒤 확인 버튼을 누르세요.',check:true,ans:'k = 40 N/m입니다. T = 2π√(m/k)에서 m/k의 비가 같으면 주기가 같습니다. 1/20 = 2/40'},
+{lv:'도전',title:'최대 속력 예측하기',desc:'m = 1 kg, k = 20 N/m, A = 0.10 m일 때 최대 속력 v_max를 계산해 입력해 보세요. 그다음 시뮬레이션의 속도 v 값으로 확인해 보세요.',setup:{m:1,k:20,A:.10,damp:false,chart:'x'},input:{unit:'m/s',value:Math.sqrt(20)*.1,tol:.02},ans:'v_max = Aω = A√(k/m) = 0.10 × √20 ≈ 0.45 m/s입니다. 물체가 평형 위치를 지날 때(t = 0, T/2, T, …) 속력이 최대입니다.'},
+{lv:'도전',title:'감쇠진동 관찰',desc:'감쇠진동을 켜고 놓아 보세요. 진폭, 역학적 에너지, 주기는 각각 어떻게 변할까요?',setup:{damp:true,chart:'energy'},ans:'진폭과 역학적 에너지는 시간이 지날수록 줄어듭니다(저항력이 한 일만큼 열에너지로 전환). 주기는 거의 변하지 않지만, 엄밀히는 ω′ = √(ω² − γ²)라서 아주 조금 길어집니다.'}
+];
+const lvClass={'기본':'basic','탐구':'inq','도전':'chal'};
+const doneSet=new Set();
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+function applySetup(s){if(s.m!=null)$('mass').value=s.m;if(s.k!=null)$('k').value=s.k;if(s.A!=null)$('amp').value=s.A;if(s.damp!=null)$('damped').checked=s.damp;change();if(s.chart)setChart(s.chart);}
+function updateProgress(){const n=MISSIONS.length,d=doneSet.size;$('progText').textContent=`완료 ${d} / ${n}`;$('progBar').style.width=(d/n*100)+'%';}
+function renderMissions(){const list=$('missionList');MISSIONS.forEach((m,i)=>{const box=el('div','mission');box.dataset.lv=m.lv;
+const head=el('div','mhead');head.append(el('span','lv '+lvClass[m.lv],m.lv),el('b',null,`미션 ${i+1} · ${m.title}`));box.append(head,el('p',null,m.desc));
+const fb=el('div','fb');fb.hidden=true;const say=(msg,kind)=>{fb.textContent=msg;fb.className='fb '+kind;fb.hidden=false;};
+if(m.input){const ask=el('div','ask');const inp=el('input');inp.type='number';inp.step='0.01';inp.inputMode='decimal';inp.placeholder='예측값';inp.setAttribute('aria-label','미션 '+(i+1)+' 예측값');const chk=el('button',null,'채점');chk.onclick=()=>{const val=parseFloat(inp.value);if(isNaN(val)){say('숫자를 입력해 주세요.','no');return;}if(Math.abs(val-m.input.value)<=m.input.tol)say(`정답에 가까워요! (정확한 값 ≈ ${m.input.value.toFixed(3)} ${m.input.unit})`,'ok');else say(val>m.input.value?'조금 커요. 공식 v_max = Aω를 다시 확인해 보세요.':'조금 작아요. ω = √(k/m)부터 다시 계산해 보세요.','no');};ask.append(inp,el('span',null,m.input.unit),chk);box.append(ask);}
+const btns=el('div','mbtns');
+if(m.setup){const b=el('button','setup','⚙ 조건 맞추기');b.onclick=()=>{applySetup(m.setup);say('실험 조건을 맞췄어요. ▶ 놓기를 눌러 시작하세요.','info');};btns.append(b);}
+if(m.check){const b=el('button','setup','✔ 내 설정 확인');b.onclick=()=>{const T0=2*Math.PI*Math.sqrt(1/20);if(Math.abs(settings.m-2)>.05){say(`먼저 질량을 2.0 kg으로 맞춰 주세요. (현재 ${settings.m.toFixed(1)} kg)`,'no');return;}const T=period();if(Math.abs(settings.k-40)<.5)say(`성공! 현재 주기 ${T.toFixed(2)} s = 목표 주기 ${T0.toFixed(2)} s`,'ok');else say(`현재 주기 ${T.toFixed(2)} s, 목표 주기 ${T0.toFixed(2)} s. k를 ${T>T0?'키워':'줄여'} 보세요.`,'no');};btns.append(b);}
+const rv=el('button',null,'정답·설명 보기');const ans=el('div','answer',m.ans);ans.hidden=true;rv.onclick=()=>{ans.hidden=!ans.hidden;rv.textContent=ans.hidden?'정답·설명 보기':'정답 접기';};btns.append(rv);
+const lab=el('label','done');const cb=el('input');cb.type='checkbox';cb.onchange=()=>{cb.checked?doneSet.add(i):doneSet.delete(i);box.classList.toggle('complete',cb.checked);updateProgress();};lab.append(cb,document.createTextNode('완료'));btns.append(lab);
+box.append(btns,fb,ans);list.append(box);});updateProgress();}
+document.querySelectorAll('#chips .chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('#chips .chip').forEach(x=>x.classList.toggle('active',x===c));const lv=c.dataset.lv;document.querySelectorAll('#missionList .mission').forEach(mm=>{mm.hidden=!(lv==='all'||mm.dataset.lv===lv);});});
+
+function strokeLine(c,x1,y1,x2,y2,col,width=2,dash=[]){c.beginPath();c.strokeStyle=col;c.lineWidth=width;c.setLineDash(dash);c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();c.setLineDash([]);}
+function text(c,str,xx,yy,color='#4e6177',size=16,align='left',weight='500'){c.fillStyle=color;c.font=`${weight} ${size}px system-ui,sans-serif`;c.textAlign=align;c.fillText(str,xx,yy);c.textAlign='left';}
+function arrow(c,x1,y1,x2,y2,color,label){if(Math.abs(y2-y1)<5)return;strokeLine(c,x1,y1,x2,y2,color,4);const sign=Math.sign(y2-y1);c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-9,y2-12*sign);c.lineTo(x2+9,y2-12*sign);c.closePath();c.fillStyle=color;c.fill();text(c,label,x2+17,(y1+y2)/2,color,17);}
+function drawSpring(){const c=ctx;const cy=centerY(),top=supportY,bottom=cy-39,segments=18,sy=top+20,ey=Math.max(top+40,bottom-18),amp=19;c.beginPath();c.moveTo(anchorX,top);c.lineTo(anchorX,sy);for(let j=0;j<=segments;j++){let frac=j/segments;let xx=(j===0||j===segments)?anchorX:anchorX+(j%2?amp:-amp);c.lineTo(xx,sy+(ey-sy)*frac);}c.lineTo(anchorX,bottom);c.strokeStyle='#718298';c.lineWidth=6;c.lineJoin='round';c.lineCap='round';c.stroke();}
+function draw(){const c=ctx;c.clearRect(0,0,W,H);let grad=c.createLinearGradient(0,0,0,H);grad.addColorStop(0,'#fafdff');grad.addColorStop(1,'#edf5ff');c.fillStyle=grad;c.fillRect(0,0,W,H);
+for(let yy=60;yy<H;yy+=44)strokeLine(c,0,yy,W,yy,'#eaf0f7',1);
+c.fillStyle='#cbd7e6';c.fillRect(anchorX-126,32,252,20);for(let i=-123;i<124;i+=17)strokeLine(c,anchorX+i,52,anchorX+i+15,32,'#9badc2',1.4);
+strokeLine(c,anchorX,52,anchorX,supportY,'#6f7e92',5);
+const eq=eqY(),cy=centerY();strokeLine(c,46,eq,W-55,eq,'#40a47d',2,[9,8]);text(c,'평형 위치 (x=0)',W-45,eq-13,'#238260',16,'right','700');
+const ext=settings.m*g/settings.k;text(c,`정적 늘어난 길이 mg/k = ${ext.toFixed(2)} m`,22,92,'#65778e',15);
+const guideX=W-90;const guideEnd=Math.min(H-65,eq+settings.A*pxPerM);strokeLine(c,guideX,eq,guideX,guideEnd,'#ef9a43',3);strokeLine(c,guideX-8,eq,guideX+8,eq,'#ef9a43',2);strokeLine(c,guideX-8,guideEnd,guideX+8,guideEnd,'#ef9a43',2);text(c,'A',guideX+18,(eq+guideEnd)/2+5,'#d47c21',20,'left','800');
+drawSpring();
+c.beginPath();c.ellipse(anchorX+2,cy+43,35,7,0,0,2*Math.PI);c.fillStyle='#a7b9d62a';c.fill();c.beginPath();c.roundRect(anchorX-42,cy-39,84,78,14);c.fillStyle='#3b86f6';c.fill();c.strokeStyle='#1e5cc6';c.lineWidth=4;c.stroke();c.beginPath();c.roundRect(anchorX-36,cy-33,72,20,9);c.fillStyle='#8ebeff';c.fill();text(c,'m',anchorX,cy+15,'#ffffff',30,'center','800');
+if(state==='held'){text(c,'☝️',anchorX+60,cy+30,'#263c55',43);}
+if(Math.abs(x)>.008)arrow(c,anchorX-110,eq,anchorX-110,cy,'#f08a4b','x');if(Math.abs(v)>.025)arrow(c,anchorX+94,cy,anchorX+94,cy+Math.sign(v)*Math.min(76,22+Math.abs(v)*50),'#3288cc','v');let acc=-settings.k/settings.m*x;if(Math.abs(acc)>.15)arrow(c,anchorX-183,cy,anchorX-183,cy+Math.sign(acc)*Math.min(75,22+Math.abs(acc)*4),'#875ec5','a');
+text(c,'복원력 F = −kx',28,H-28,'#687a90',17);text(c,`t = ${graphTime().toFixed(2)} s`,W-26,H-28,'#4b6385',17,'right','700');
+$('xVal').textContent=(x>=0?'+':'')+x.toFixed(3)+' m';$('vVal').textContent=v.toFixed(2)+' m/s';$('aVal').textContent=acc.toFixed(2)+' m/s²';$('tVal').textContent=period().toFixed(2)+' s';drawGraph();}
+function drawGraph(){const c=pctx,w=P.width,h=P.height,L=66,R=20,T=25,B=57,plotW=w-L-R,plotH=h-T-B;c.clearRect(0,0,w,h);c.fillStyle='#fff';c.fillRect(0,0,w,h);
+const now=graphTime();const windowLength=Math.max(8,period()*3.5),end=Math.max(windowLength,now),begin=end-windowLength;
+const amp0=Math.max(settings.A,Math.abs(startX),refR);
+const maxE=Math.max(.002,.5*settings.k*amp0*amp0);const yTop=chart==='x'?Math.max(.04,amp0*1.125):maxE*1.12;
+const yMin=chart==='x'?-yTop:0,yMax=yTop;const yCoord=y=>T+(yMax-y)/(yMax-yMin)*plotH;const xCoord=t=>L+(t-begin)/windowLength*plotW;
+for(let j=0;j<=4;j++){const yy=T+j*plotH/4;strokeLine(c,L,yy,w-R,yy,'#e9eff6',1);const value=yMax-(yMax-yMin)*j/4;text(c,value.toFixed(chart==='x'?2:3),L-10,yy+5,'#74849a',13,'right');}
+for(let j=0;j<=5;j++){const xx=L+j*plotW/5;strokeLine(c,xx,T,xx,h-B,'#eff3f8',1);text(c,(begin+j*windowLength/5).toFixed(1),xx,h-B+23,'#74849a',13,'center');}
+text(c,chart==='x'?'x (m)':'에너지 (J)',14,16,'#516d8d',14);text(c,'t (s)',w-R,h-12,'#516d8d',14,'right');strokeLine(c,L,yCoord(0),w-R,yCoord(0),'#a1b3ca',1.7);
+const active=(state==='running'||state==='paused')&&refR>0;
+// 이론 곡선 A sin(ωt) (이상적인 단진동일 때)
+if(chart==='x'&&active&&!settings.damp){const wv=omega();c.beginPath();let first=true;for(let i=0;i<=300;i++){const t=begin+windowLength*i/300;if(t<0)continue;const xx=xCoord(t),yy=yCoord(refR*Math.sin(wv*t));if(first){c.moveTo(xx,yy);first=false;}else c.lineTo(xx,yy);}c.strokeStyle='#9bb8e8';c.lineWidth=2;c.setLineDash([6,6]);c.stroke();c.setLineDash([]);}
+// 손을 놓은 순간 표시
+if(active&&tOffset>1e-3&&tOffset>=begin&&tOffset<=end){const rx=xCoord(tOffset);strokeLine(c,rx,T,rx,h-B,'#c58a3e',1.5,[4,5]);text(c,'놓은 순간',rx+5,h-B-8,'#b0702a',12,'left','700');}
+function series(key,color){let started=false;c.beginPath();for(const row of samples){if(row.t<begin)continue;const xx=xCoord(row.t),yy=yCoord(row[key]);if(!started){c.moveTo(xx,yy);started=true;}else c.lineTo(xx,yy);}c.strokeStyle=color;c.lineWidth=3;c.stroke();if(started){const last=samples[samples.length-1];if(last.t>=begin){c.beginPath();c.arc(xCoord(last.t),yCoord(last[key]),4,0,Math.PI*2);c.fillStyle=color;c.fill();}}}
+if(chart==='x'){series('x','#2569e8');text(c,'● 변위 x',w-30,21,'#2569e8',14,'right','700');if(!settings.damp)text(c,'┄ x = A sin(ωt)',w-118,21,'#7f9fd6',13,'right','700');}else{series('K','#2478d8');series('U','#e58e28');series('E','#238f73');text(c,'● 운동',L+10,19,'#2478d8',13);text(c,'● 퍼텐셜',L+108,19,'#e58e28',13);text(c,'● 역학적',L+246,19,'#238f73',13);}}
+function frame(stamp){if(lastStamp===null)lastStamp=stamp;const delta=Math.min(.06,Math.max(0,(stamp-lastStamp)/1000));lastStamp=stamp;if(state==='running'){elapsed+=delta;const z=solve(elapsed);x=z.x;v=z.v;sample(false);}draw();requestAnimationFrame(frame);}
+renderMissions();setChart('x');change();requestAnimationFrame(frame);
+})();
+</script>
+</body></html>

@@ -53,6 +53,9 @@ const players = new Map();
 const sockets = new Map();
 const COLORS = [0x59e4da,0xfbbf78,0xc4a7ff,0xff91bd,0x8db8ff,0xb0ec83,0xffd66e];
 const EXHIBIT_IDS = new Set(['mechanics','electromagnetism','waves']);
+const DEFAULT_LOOK=Object.freeze({"hair":"none","face":"Face_Default","outfit":"none","bottom":"none","gear":"none","badge":"none","gloves":"none","hand":"none","backpack":"none","hairColor":"#79503E","outfitColor":"#E8EEF6","bottomColor":"#2F496F","gearColor":"#D3B66F"});
+const ALLOWED_LOOK={"hair":["none","Hair_M01","Hair_M02","Hair_M03","Hair_M04","Hair_G_BOBPERM","Hair_G_BRAID","Hair_G_BUNS","Hair_G_HALFUP","Hair_G_LONGPERM","Hair_G_PONY","Hair_G_TWIN","Hair_G_UPDO"],"face":["Face_Default","Face_Smile","Face_Focus","Face_Curious","Face_Surprise","Face_Wink","Face_Sleepy"],"outfit":["none","Outfit_LabCoat","Outfit_Gown","Outfit_JacketB","Outfit_UniformA","Outfit_Explorer","Outfit_Casual","Outfit_Apron"],"bottom":["none","Bottom_Pants"],"gear":["none","Gear_Goggles","Gear_Glasses"],"badge":["none","Gear_NameTag","Gear_Badge"],"gloves":["none","Gear_Gloves"],"hand":["none","Gear_Beaker","Gear_Magnifier"],"backpack":["none","Gear_Backpack"],"hairColor":["#79503E","#30292B","#C89B54","#A45E55","#D98DB1","#8694C5","#E3D2A9"],"outfitColor":["#E8EEF6","#8EBED7","#F2BECC","#9BD3B0","#D2B5EE","#F2C47D","#4D6384"],"bottomColor":["#2F496F","#638EAC","#9A7DC3","#C48B95","#4D5963","#F5D8C9"],"gearColor":["#D3B66F","#6685A8","#82BDAE","#B28BD0","#D38C9D","#69777E"]};
+const sanitizeLook=(value)=>Object.fromEntries(Object.entries(ALLOWED_LOOK).map(([k,options])=>[k,options.includes(value?.[k])?value[k]:DEFAULT_LOOK[k]]));
 const send = (ws, msg) => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg)); };
 const broadcast = (msg, except = null) => {
   const packet = JSON.stringify(msg);
@@ -64,9 +67,9 @@ const clean = (value, max) => String(value ?? '').replace(/[\u0000-\u001F\u007F<
 wss.on('connection', ws => {
   if (players.size >= MAX_VISITORS) { send(ws, { type:'error', message:'전시관 정원이 가득 찼습니다.' }); ws.close(1013); return; }
   const id = randomUUID();
-  const player = { id, name:`탐험가${Math.floor(Math.random()*900+100)}`, x:0, z:7.2, rot:Math.PI, color:COLORS[players.size % COLORS.length] };
+  const player = { id, name:`탐험가${Math.floor(Math.random()*900+100)}`, x:0, z:7.2, rot:Math.PI, color:COLORS[players.size % COLORS.length],avatar:{...DEFAULT_LOOK} };
   players.set(id,player); sockets.set(id,ws);
-  let lastMove = 0, lastChat = 0, lastInteraction = 0, lastWave = 0;
+  let lastMove = 0, lastChat = 0, lastInteraction = 0, lastWave = 0, lastAppearance = 0;
   send(ws,{ type:'welcome', id, players:[...players.values()], capacity:MAX_VISITORS });
   broadcast({type:'joined',player}, ws);
   ws.on('message', raw => {
@@ -74,6 +77,12 @@ wss.on('connection', ws => {
     if (!msg || typeof msg !== 'object') return;
     if (msg.type === 'name') {
       player.name = clean(msg.name, 14) || player.name;
+      if(msg.avatar)player.avatar=sanitizeLook(msg.avatar);
+      broadcast({type:'updated',player});
+    } else if (msg.type === 'appearance') {
+      const now=Date.now();if(now-lastAppearance<300)return;
+      lastAppearance=now;
+      player.avatar=sanitizeLook(msg.avatar);
       broadcast({type:'updated',player});
     } else if (msg.type === 'move') {
       const now = Date.now(); if (now - lastMove < 45) return;

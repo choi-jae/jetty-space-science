@@ -1,19 +1,19 @@
 {
   "name": "jetty-space-museum",
-  "version": "0.7.0",
+  "version": "0.9.8.1",
   "private": true,
   "type": "module",
-  "description": "JETTY SPACE 밝은 3개 과학관과 고품질 GLB 캐릭터, WebSocket 다중 접속",
+  "description": "JETTY SPACE no stored look, no skirt / clipboard / skin-tone selector; spring-lab integration preserved",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check public/main.js && node --check public/world-collision.js && node verify-assets.mjs"
+    "check": "node --check server.js && node --check public/main.js && node --check public/avatar-parts.js && node --check public/world-collision.js && node verify-assets.mjs"
   },
   "dependencies": {
     "three": "^0.180.0",
     "ws": "^8.18.3"
   },
   "engines": {
-    "node": ">=22 <25"
+    "node": ">=22"
   }
 }
